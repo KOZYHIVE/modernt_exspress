@@ -27,7 +27,6 @@ class BrandController {
             res.status(500).json({ error: "Failed to create brand" });
         }
     }
-
     // Fungsi untuk mendapatkan brand berdasarkan ID
     static async getBrandById(req: Request, res: Response) {
         try {
@@ -53,11 +52,15 @@ class BrandController {
     static async updateBrand(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { brand_name, local_image_path } = req.body;
-
+            const { brand_name } = req.body;
+            const image = req.file;
             if (!id) {
                 return res.status(400).json({ error: "Brand ID is required" });
             }
+
+            // Simpan path gambar jika ada
+            const local_image_path = image ? `images/${image.filename}` : undefined;
+
 
             const updatedBrand = await BrandModel.update(Number(id), { brand_name, local_image_path });
 

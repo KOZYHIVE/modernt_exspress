@@ -16,6 +16,8 @@ import vehicleRoutes  from "./routes/vehicleRoutes";
 import rentalRoutes from "./routes/rentalRoutes";
 import transactionRoutes from "./routes/transactionRoutes";
 import bannerRoutes from "./routes/bannerRoutes";
+import fcmRoutes from "./routes/fcmRoutes";
+import tokenRoutes from "./routes/tokenRoutes";
 
 // Initialize dotenv
 dotenv.config();
@@ -43,6 +45,8 @@ app.use("/api/vehicles", vehicleRoutes);
 app.use("/api/rentals", rentalRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/banners", bannerRoutes);
+app.use("/api/fcm", fcmRoutes);
+app.use("/api/tokens", tokenRoutes);
 
 // Start server
 const PORT = process.env.PORT || 8000;

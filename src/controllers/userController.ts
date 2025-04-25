@@ -157,7 +157,7 @@ class UserController {
       const users = await UserService.searchUser(searchQuery);
 
       // Filter pengguna agar tidak termasuk pengguna yang sedang login
-      const filteredUsers = users.filter((usr) => usr.id !== authUser.id);
+      const filteredUsers = users.filter((usr: { id: any; }) => usr.id !== authUser.id);
 
       // Kirim respons sukses
       res.status(200).json({

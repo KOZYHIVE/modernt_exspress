@@ -17,7 +17,7 @@ router.get("/", BrandController.getBrands);
 router.get("/:id", BrandController.getBrandById);
 
 // Memperbarui brand berdasarkan ID (dengan autentikasi)
-router.put("/:id", authMiddleware, BrandController.updateBrand);
+router.put("/:id", authMiddleware, upload.single("image"), BrandController.updateBrand);
 
 // Menghapus brand berdasarkan ID (dengan autentikasi)
 router.delete("/:id", authMiddleware, BrandController.deleteBrand);

@@ -1,4 +1,4 @@
-import { prisma } from "../config/prisma";
+import prisma from '../config/prisma';
 
 export class VehicleModel {
     // Fungsi untuk membuat kendaraan baru

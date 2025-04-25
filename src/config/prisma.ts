@@ -1,3 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
 
-export const prisma = new PrismaClient()
+const prisma = new PrismaClient(); // ✅ Pastikan hanya ada satu instance Prisma
+export default prisma; // ✅ Gunakan export default agar bisa diimpor langsung

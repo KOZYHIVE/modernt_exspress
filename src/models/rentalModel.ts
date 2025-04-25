@@ -1,4 +1,4 @@
-import { prisma } from "../config/prisma";
+import prisma from '../config/prisma';
 import {RentalStatus} from "@prisma/client";
 
 export class RentalModel {

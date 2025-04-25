@@ -1,4 +1,4 @@
-import { prisma } from "../config/prisma";
+import prisma from '../config/prisma';
 import { PaymentStatus, PaymentMethod } from "@prisma/client";
 
 export class TransactionModel {

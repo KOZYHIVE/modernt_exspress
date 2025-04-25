@@ -1,5 +1,3 @@
-// controllers/RentalController.ts
-
 import { Request, Response } from "express";
 import { RentalModel } from "../models/rentalModel";
 import { RentalStatus } from "@prisma/client";

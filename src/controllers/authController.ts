@@ -7,7 +7,7 @@ import nodemailer from "nodemailer";
 import { UserService } from "../models/userModel";
 import RefreshTokenModel from "../models/refreshToken";
 import {SendEmailResetPassword} from "../utils/SendEmailResetPassword";
-import {prisma} from "../config/prisma";
+import prisma from '../config/prisma';
 
 class AuthController {
     // Fungsi untuk registrasi pengguna baru
