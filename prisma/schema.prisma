@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,11 +11,219 @@ datasource db {
 }
 
 model User {
-  id Int @id @default(autoincrement())
-  first_name String
-  last_name String
-  email String
-  password String
+  id                 Int            @id @default(autoincrement())
+  username           String         @unique
+  email              String         @unique
+  password           String
+  url_profile        String?
+  secure_url_profile String?
+  public_url_profile String?
+  role               Role           @default(user)
+  status             UserStatus     @default(active)
+  otp                Int?
+  created_at         DateTime       @default(now())
+  updated_at         DateTime       @updatedAt
+  detail_user        DetailUser?
+  logs               Log[]
+  refresh_token      RefreshToken[]
+  banner             Banner[]
+  rental             Rental[]
+  transaction        Transaction[]
+}
+
+enum Role {
+  user
+  admin
+}
+
+enum UserStatus {
+  active
+  pending
+  suspend
+}
+
+model DetailUser {
+  id         Int      @id @default(autoincrement())
+  user_id    Int      @unique
+  full_name  String
+  address    String
+  phone      String
+  gender     Gender
+  dob        DateTime
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
+  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+enum Gender {
+  male
+  female
+}
+
+model Log {
+  id          Int    @id @default(autoincrement())
+  user_id     Int
+  action      Action
+  description String
+  created_at  BigInt
+  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+enum Action {
+  login
+  logout
+  add_car
+  update_car
+  delete_car
+  booking_car
+  confirm_payment
+  canceled_booking
+}
+
+model RefreshToken {
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  refresh_token String?  @db.VarChar(1024)
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model Vehicle {
+  id                     Int                    @id @default(autoincrement())
+  brand_id               Int
+  vehicle_type           VehicleType
+  vehicle_name           String
+  rental_price           Int
+  availability_status    AvailabilityStatus     @default(available)
+  year                   DateTime
+  seats                  Int
+  horse_power            Int
+  description            String
+  specification_list     Int
+  secure_url_image       String
+  public_url_image       String
+  url_image              String
+  created_at             DateTime               @default(now())
+  updated_at             DateTime               @updatedAt
+  brand                  Brand                  @relation(fields: [brand_id], references: [id], onDelete: Cascade)
+  vehicle_specifications VehicleSpecification[]
+  image_vehicles         ImageVehicle[]
+  rental                 Rental[]
+}
+
+enum VehicleType {
+  motorcycle
+  car
+}
+
+enum AvailabilityStatus {
+  available
+  rented
+  inactive
+}
+
+model Brand {
+  id               Int       @id @default(autoincrement())
+  brand_name       String
+  url_image        String
+  public_url_image String
+  secure_url_image String
+  created_at       DateTime  @default(now())
+  updated_at       DateTime  @updatedAt
+  vehicles         Vehicle[]
+}
+
+model VehicleSpecification {
+  id                 Int      @id @default(autoincrement())
+  vehicle_id         Int
+  specification_list String
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  vehicle            Vehicle  @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
+}
+
+model Rental {
+  id                Int           @id @default(autoincrement())
+  vehicle_id        Int
+  start_date        DateTime
+  end_date          DateTime
+  delivery_location String
+  rental_status     RentalStatus
+  total_price       Int
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+  vehicle           Vehicle       @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
+  transaction       Transaction[]
+
+  User User[]
+}
+
+enum RentalStatus {
+  pending
+  confirmed
+  canceled
+}
+
+model Transaction {
+  id               BigInt        @id @default(autoincrement())
+  user_id          Int
+  rental_id        Int
+  payment_status   PaymentStatus
+  transaction_date DateTime
+  payment_method   PaymentMethod
+  total_amount     Int
+  proof_of_payment Int
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  user             User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  rental           Rental        @relation(fields: [rental_id], references: [id], onDelete: Cascade)
+  image_payment    ImagePayment  @relation(fields: [proof_of_payment], references: [id], onDelete: Cascade)
+}
+
+enum PaymentStatus {
+  paid
+  unpaid
+  pending
+}
+
+enum PaymentMethod {
+  credit_card
+  debit_card
+  bank_transfer
+}
+
+model ImageVehicle {
+  id               Int      @id @default(autoincrement())
+  vehicle_id       Int
+  url_image        String
+  secure_url_image String
+  public_url_image String
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  vehicle          Vehicle  @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
+}
+
+model ImagePayment {
+  id               Int           @id @default(autoincrement())
+  transaction_id   Int           @unique
+  url_image        String
+  secure_url_image String
+  public_url_image String
+  created_at       DateTime      @default(now())
+  updated_at       DateTime      @updatedAt
+  transaction      Transaction[]
+}
+
+model Banner {
+  id                 Int      @id @default(autoincrement())
+  user_id            Int
+  description        String
+  specification_list Int
+  url_image          String
+  secure_url_image   String
+  public_url_image   String
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+  user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }

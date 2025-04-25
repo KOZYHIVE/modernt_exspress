@@ -5,12 +5,14 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import helmet from "helmet";
 
-// import middleware
-import { jsonOnlyMiddleware } from "./middleware/jsonOnlyMiddleware";
+// Import middlewares
+// import { jsonOnlyMiddleware } from "./middlewares/jsonOnlyMiddleware";
 
 // Import routes
 import welcomeRoutes from "./routes/welcomeRoutes";
 import userRoutes from "./routes/userRoutes";
+import authRoutes from "./routes/authRoutes";
+import detailUserRoutes from "./routes/detailUserRoutes";
 
 // Initialize dotenv
 dotenv.config();
@@ -27,8 +29,10 @@ app.use(express.json());
 // Routes
 app.use("/", welcomeRoutes);
 
-app.use(jsonOnlyMiddleware);
+// app.use(jsonOnlyMiddleware);
 app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/detail-users", detailUserRoutes);
 
 // Start server
 const PORT = process.env.PORT || 8000;

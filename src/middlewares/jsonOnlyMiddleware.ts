@@ -6,6 +6,6 @@ export const jsonOnlyMiddleware = (req: Request, res: Response, next: NextFuncti
   if (contentType && contentType.includes('application/json')) {
     next();
   } else {
-    res.status(415).json({ error: 'Only Support On JSON application. Please edit on /src/middleware/jsonOnlyMiddleware.ts' });
+    res.status(415).json({ error: 'Only Support On JSON application. Please edit on /src/middlewares/jsonOnlyMiddleware.ts' });
   }
 };

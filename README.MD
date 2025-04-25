@@ -18,7 +18,7 @@ src/
 │   └── userRoutes.ts
 ├── utils/               # Utilitas untuk enkripsi dan JWT
 │   ├── encryptUtil.ts   # Fungsi enkripsi menggunakan bcryptjs
-│   └── jwtUtil.ts       # Fungsi JWT menggunakan jsonwebtoken
+│   └── jwt.ts       # Fungsi JWT menggunakan jsonwebtoken
 ├── index.ts             # Titik masuk aplikasi
 .env                     # File konfigurasi lingkungan
 prisma/
@@ -204,7 +204,7 @@ prisma/
 ### JwtUtil
 
 - **Fungsi:** Menggunakan jsonwebtoken untuk membuat dan memverifikasi token JWT.
-- **Lokasi:** `src/utils/jwtUtil.ts`
+- **Lokasi:** `src/utils/jwt.ts`
 
 ## Kontribusi
 
