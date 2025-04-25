@@ -6,6 +6,8 @@ export class BannerModel {
         user_id: number;
         description: string;
         local_image_path?: string;
+        secure_url_image: string;
+        public_url_image: string;
     }) {
         return prisma.banner.create({ data });
     }

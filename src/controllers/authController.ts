@@ -63,7 +63,7 @@ class AuthController {
             // Generate token
             const payload = { userId: user.id, email: user.email };
             const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN!, { expiresIn: "10m" });
-            const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN!, { expiresIn: "4h" });
+            const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN!, { expiresIn: "7d" });
 
             // Simpan refresh token ke database menggunakan RefreshTokenModel
             await RefreshTokenModel.create(user.id, refreshToken);
@@ -73,10 +73,10 @@ class AuthController {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === "production",
                 sameSite: "strict",
-                maxAge: 4 * 60 * 60 * 1000, // 4 hours
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 1 minggu
             });
 
-            res.status(200).json({ message: "Login successful", accessToken });
+            res.status(200).json({ message: "Login successful", refreshToken, accessToken });
         } catch (error) {
             console.error("Error during login:", error);
             res.status(500).json({ error: "Failed to login" });

@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
-
+import dotenv from "dotenv";
+dotenv.config();
 // Menggunakan process.env untuk mengakses variabel lingkungan
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME ?? "",

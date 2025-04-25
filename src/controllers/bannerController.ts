@@ -2,6 +2,7 @@
 
 import { Request, Response } from "express";
 import { BannerModel } from "../models/bannerModel";
+import {uploadFile} from "../utils/upload_file";
 
 
 class BannerController {
@@ -17,17 +18,35 @@ class BannerController {
             const { description } = req.body;
             const image = req.file; // File yang di-upload
 
-            if (!user_id || !description ) {
-                return res.status(400).json({ error: "User ID and description are required" });
+            console.log(image);
+
+            let uploadResult;
+            if (image && image.buffer) {
+                uploadResult = await uploadFile({
+                    fileBuffer: image.buffer,
+                    filename: image.filename,
+                    mimeType: image.mimetype,
+                });
             }
 
+            console.log(uploadResult);
+            if(!uploadResult) {
+                return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
+            }
+            if (!user_id || !description ) {
+                return res.status(400).json({ error: "User ID and description are required" });
+
+            }
             // Simpan path gambar jika ada
-            const local_image_path = image ? `images/${image.filename}` : undefined;
+
+            // const local_image_path = image ? `images/${image.filename}` : undefined;
 
             const newBanner = await BannerModel.create({
                 user_id: Number(user_id),
                 description,
-                local_image_path,
+                // local_image_path,
+                public_url_image: uploadResult.url,
+                secure_url_image: uploadResult.secure_url,
             });
 
             res.status(201).json({ message: "Banner created successfully", data: newBanner });
