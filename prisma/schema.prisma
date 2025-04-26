@@ -101,7 +101,6 @@ model Vehicle {
   created_at             DateTime               @default(now())
   updated_at             DateTime               @updatedAt
   brand                  Brand                  @relation(fields: [brand_id], references: [id], onDelete: Cascade)
-  vehicle_specifications VehicleSpecification[]
   rental Rental[]
 }
 
@@ -124,15 +123,6 @@ model Brand {
   created_at       DateTime  @default(now())
   updated_at       DateTime  @updatedAt
   vehicles         Vehicle[]
-}
-
-model VehicleSpecification {
-  id                 Int      @id @default(autoincrement())
-  vehicle_id         Int
-  specification String
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
-  vehicle            Vehicle  @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
 }
 
 model Rental {
