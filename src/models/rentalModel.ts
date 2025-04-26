@@ -4,10 +4,11 @@ import {RentalStatus} from "@prisma/client";
 export class RentalModel {
     // Fungsi untuk membuat rental baru
     static async create(data: {
+        user_id: number;
         vehicle_id: number;
         start_date: Date;
         end_date: Date;
-        delivery_location: string;
+        delivery_location_id: number;
         rental_status: RentalStatus;
         total_price: number;
     }) {
@@ -20,7 +21,7 @@ export class RentalModel {
     static async getById(id: number) {
         return prisma.rental.findUnique({
             where: { id },
-            include: { vehicle: true, transaction: true, User: true },
+            include: { vehicle: true, transaction: true },
         });
     }
 
@@ -63,7 +64,7 @@ export class RentalModel {
                 updated_at: true,
                 vehicle: true,
                 transaction: true,
-                User: true,
+                user_id : true
             },
             skip: payload.skip,
             take: payload.itemsPerPage,

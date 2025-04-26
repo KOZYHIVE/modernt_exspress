@@ -1,5 +1,3 @@
-// routes/brandRoutes.ts
-
 import express from "express";
 import BrandController from "../controllers/brandController";
 import { authMiddleware } from "../middlewares/authMiddleware";

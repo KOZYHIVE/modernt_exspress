@@ -5,7 +5,6 @@ export class BannerModel {
     static async create(data: {
         user_id: number;
         description: string;
-        local_image_path?: string;
         secure_url_image: string;
         public_url_image: string;
     }) {
@@ -22,7 +21,12 @@ export class BannerModel {
 
     // Fungsi untuk memperbarui banner berdasarkan ID
     // @ts-ignore
-    static async update(id: number, data: Partial<Omit<typeof data, "id">>) {
+    static async update(id: number, data: {
+        user_id?: number;
+        description?: string;
+        secure_url_image?: string;
+        public_url_image?: string;
+    }) {
         const existingBanner = await prisma.banner.findUnique({ where: { id } });
 
         if (!existingBanner) {
@@ -31,9 +35,7 @@ export class BannerModel {
 
         return prisma.banner.update({
             where: { id },
-            data: {
-                ...data,
-            },
+            data,
         });
     }
 
@@ -49,10 +51,10 @@ export class BannerModel {
                 id: true,
                 user_id: true,
                 description: true,
-                local_image_path: true,
+                public_url_image: true,
+                secure_url_image: true,
                 created_at: true,
                 updated_at: true,
-                user: true,
             },
             skip: payload.skip,
             take: payload.itemsPerPage,

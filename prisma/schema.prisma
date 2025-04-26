@@ -15,7 +15,6 @@ model User {
   username           String         @unique
   email              String         @unique
   password           String
-  url_profile        String?
   secure_url_profile String?
   public_url_profile String?
   role               Role           @default(user)
@@ -23,12 +22,13 @@ model User {
   otp                Int?
   created_at         DateTime       @default(now())
   updated_at         DateTime       @updatedAt
-  detail_user        DetailUser?
+  address_delivery AddressDelivery[]
   logs               Log[]
   refresh_token      RefreshToken[]
   banner             Banner[]
   rental             Rental[]
   transaction        Transaction[]
+  bank_transfer BankTransfer[]
 }
 
 enum Role {
@@ -42,22 +42,17 @@ enum UserStatus {
   suspend
 }
 
-model DetailUser {
+model AddressDelivery {
   id         Int      @id @default(autoincrement())
-  user_id    Int      @unique
+  user_id    Int
   full_name  String
   address    String
   phone      String
-  gender     Gender
-  dob        DateTime
   created_at DateTime @default(now())
   updated_at DateTime @updatedAt
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-}
+  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
-enum Gender {
-  male
-  female
+  Rental Rental[]
 }
 
 model Log {
@@ -101,12 +96,13 @@ model Vehicle {
   horse_power            Int
   description            String
   specification_list     String
-  local_image_path       String?
+  secure_url_image String?
+  public_url_image String?
   created_at             DateTime               @default(now())
   updated_at             DateTime               @updatedAt
   brand                  Brand                  @relation(fields: [brand_id], references: [id], onDelete: Cascade)
   vehicle_specifications VehicleSpecification[]
-  rental                 Rental[]
+  rental Rental[]
 }
 
 enum VehicleType {
@@ -123,7 +119,8 @@ enum AvailabilityStatus {
 model Brand {
   id               Int       @id @default(autoincrement())
   brand_name       String
-  local_image_path String? // Path file lokal untuk gambar
+  secure_url_image String?
+  public_url_image String?
   created_at       DateTime  @default(now())
   updated_at       DateTime  @updatedAt
   vehicles         Vehicle[]
@@ -139,19 +136,20 @@ model VehicleSpecification {
 }
 
 model Rental {
-  id                Int           @id @default(autoincrement())
-  vehicle_id        Int
-  start_date        DateTime
-  end_date          DateTime
-  delivery_location String
-  rental_status     RentalStatus
-  total_price       Int
-  created_at        DateTime      @default(now())
-  updated_at        DateTime      @updatedAt
-  vehicle           Vehicle       @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
-  transaction       Transaction[]
-
-  User User[]
+  id                  Int              @id @default(autoincrement())
+  vehicle_id          Int
+  user_id             Int
+  start_date          DateTime
+  end_date            DateTime
+  delivery_location_id Int
+  rental_status       RentalStatus
+  total_price         Int
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @updatedAt
+  delivery_location AddressDelivery @relation(fields: [delivery_location_id], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
+  transaction Transaction[]
+  user                User             @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 enum RentalStatus {
@@ -168,7 +166,8 @@ model Transaction {
   transaction_date DateTime
   payment_method   PaymentMethod
   total_amount     Int
-  local_image_path       String?
+  secure_url_image String?
+  public_url_image String?
   created_at       DateTime      @default(now())
   updated_at       DateTime      @updatedAt
   user             User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -182,16 +181,16 @@ enum PaymentStatus {
 }
 
 enum PaymentMethod {
-  credit_card
-  debit_card
   bank_transfer
+  cash
 }
 
 model Banner {
   id                 Int      @id @default(autoincrement())
   user_id            Int
   description        String
-  local_image_path   String?
+  secure_url_image String?
+  public_url_image String?
   created_at         DateTime @default(now())
   updated_at         DateTime @updatedAt
   user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -204,3 +203,12 @@ model Token {
   updatedAt DateTime @updatedAt
 }
 
+model BankTransfer {
+  id Int @id @default(autoincrement())
+  user_id Int
+  name_bank String
+  number String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}

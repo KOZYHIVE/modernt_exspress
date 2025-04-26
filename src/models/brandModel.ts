@@ -4,7 +4,8 @@ export class BrandModel {
     // Fungsi untuk membuat brand baru
     static async create(data: {
         brand_name: string;
-        local_image_path?: string; // Path file lokal opsional
+        secure_url_image: string;
+        public_url_image: string;
     }) {
         return prisma.brand.create({
             data,
@@ -24,7 +25,8 @@ export class BrandModel {
         id: number,
         data: {
             brand_name?: string;
-            local_image_path?: string;
+            secure_url_image?: string;
+            public_url_image?: string;
         }
     ) {
         // Periksa apakah record ada sebelum update
@@ -55,7 +57,8 @@ export class BrandModel {
             select: {
                 id: true,
                 brand_name: true,
-                local_image_path: true,
+                secure_url_image: true,
+                public_url_image: true,
                 created_at: true,
                 updated_at: true,
                 vehicles: true,

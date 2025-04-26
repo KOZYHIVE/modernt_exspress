@@ -3,7 +3,6 @@
 import express from "express";
 import BannerController from "../controllers/bannerController";
 import { authMiddleware } from "../middlewares/authMiddleware";
-import multer from "multer";
 import {upload} from "../middlewares/upload";
 
 

@@ -1,24 +1,24 @@
-// src/routes/detailUserRoutes.ts
+// src/routes/AddressDeliveryRoutes.ts
 
 import express from "express";
-import DetailUserController from "../controllers/detailUserController";
+import AddressDeliveryController from "../controllers/addressDeliveryController";
 import { authMiddleware } from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
 // Route untuk membuat detail pengguna baru (tidak perlu autentikasi)
-router.post("/", authMiddleware, DetailUserController.createDetailUser);
+router.post("/", authMiddleware, AddressDeliveryController.createAddressDelivery);
 
 // Route untuk mendapatkan detail pengguna berdasarkan ID (memerlukan autentikasi)
-router.get("/:id", authMiddleware, DetailUserController.getDetailUserById);
+router.get("/:id", authMiddleware, AddressDeliveryController.getAddressDeliveryById);
 
 // Route untuk memperbarui detail pengguna berdasarkan ID (memerlukan autentikasi)
-router.put("/", authMiddleware, DetailUserController.updateDetailUser);
+router.put("/:id", authMiddleware, AddressDeliveryController.updateAddressDelivery);
 
 // Route untuk menghapus detail pengguna berdasarkan ID (memerlukan autentikasi)
-router.delete("/:id", authMiddleware, DetailUserController.deleteDetailUser);
+router.delete("/:id", authMiddleware, AddressDeliveryController.deleteAddressDelivery);
 
 // Route untuk mendapatkan daftar detail pengguna dengan paginasi (memerlukan autentikasi)
-router.get("/", authMiddleware, DetailUserController.getDetailUsers);
+router.get("/", authMiddleware, AddressDeliveryController.getAddressDeliverys);
 
 export default router;

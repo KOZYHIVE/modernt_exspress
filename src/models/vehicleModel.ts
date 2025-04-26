@@ -13,7 +13,8 @@ export class VehicleModel {
         horse_power: number;
         description: string;
         specification_list: string;
-        local_image_path?: string;
+        secure_url_image: string;
+        public_url_image: string;
     }) {
         return prisma.vehicle.create({
             data,
@@ -30,7 +31,20 @@ export class VehicleModel {
 
     // Fungsi untuk memperbarui kendaraan berdasarkan ID
     // @ts-ignore
-    static async update(id: number, data: Partial<Omit<typeof data, "id">>) {
+    static async update(id: number, data: {
+        brand_id?: number;
+        vehicle_type?: "motorcycle" | "car";
+        vehicle_name?: string;
+        rental_price?: number;
+        availability_status?: "available" | "rented" | "inactive";
+        year?: Date;
+        seats?: number;
+        horse_power?: number;
+        description?: string;
+        specification_list?: string;
+        secure_url_image?: string;
+        public_url_image?: string;
+    }) {
         const existingVehicle = await prisma.vehicle.findUnique({ where: { id } });
 
         if (!existingVehicle) {
@@ -65,7 +79,8 @@ export class VehicleModel {
                 horse_power: true,
                 description: true,
                 specification_list: true,
-                local_image_path: true,
+                secure_url_image: true,
+                public_url_image: true,
                 created_at: true,
                 updated_at: true,
                 brand: true,

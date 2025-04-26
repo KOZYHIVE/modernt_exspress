@@ -1,5 +1,3 @@
-// controllers/BannerController.ts
-
 import { Request, Response } from "express";
 import { BannerModel } from "../models/bannerModel";
 import {uploadFile} from "../utils/upload_file";
@@ -18,8 +16,6 @@ class BannerController {
             const { description } = req.body;
             const image = req.file; // File yang di-upload
 
-            console.log(image);
-
             let uploadResult;
             if (image && image.buffer) {
                 uploadResult = await uploadFile({
@@ -29,7 +25,6 @@ class BannerController {
                 });
             }
 
-            console.log(uploadResult);
             if(!uploadResult) {
                 return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
             }
@@ -44,7 +39,6 @@ class BannerController {
             const newBanner = await BannerModel.create({
                 user_id: Number(user_id),
                 description,
-                // local_image_path,
                 public_url_image: uploadResult.url,
                 secure_url_image: uploadResult.secure_url,
             });
@@ -81,19 +75,36 @@ class BannerController {
     static async updateBanner(req: Request, res: Response) {
         try {
             const { id } = req.params;
+            // Ambil user_id dari middleware (JWT)
+            const user_id = req.user?.userId;
+
+            if (!user_id) {
+                return res.status(401).json({ error: "Unauthorized: User ID not found in token" });
+            }
             const { description } = req.body;
             const image = req.file; // File yang di-upload
 
-            if (!id) {
-                return res.status(400).json({ error: "Banner ID is required" });
+            let uploadResult;
+            if (image && image.buffer) {
+                uploadResult = await uploadFile({
+                    fileBuffer: image.buffer,
+                    filename: image.filename,
+                    mimeType: image.mimetype,
+                });
             }
 
-            // Simpan path gambar jika ada perubahan
-            const local_image_path = image ? `images/${image.filename}` : undefined;
+            if(!uploadResult) {
+                return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
+            }
+            if (!user_id || !description ) {
+                return res.status(400).json({ error: "User ID and description are required" });
 
-            const updatedBanner = await BannerModel.update(Number(id), {
+            }
+            const updatedBanner = await BannerModel.update(Number(id),{
+                user_id: Number(user_id),
                 description,
-                local_image_path,
+                public_url_image: uploadResult.url,
+                secure_url_image: uploadResult.secure_url,
             });
 
             res.status(200).json({ message: "Banner updated successfully", data: updatedBanner });

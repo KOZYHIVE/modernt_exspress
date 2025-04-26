@@ -6,12 +6,18 @@ class RentalController {
     // Fungsi untuk membuat rental baru
     static async createRental(req: Request, res: Response) {
         try {
-            const { vehicle_id, start_date, end_date, delivery_location, rental_status, total_price } = req.body;
+            // Ambil user_id dari middleware (JWT)
+            const user_id = req.user?.userId;
 
-            // Validasi input
-            if (!vehicle_id || !start_date || !end_date || !delivery_location || !total_price) {
-                return res.status(400).json({ error: "All required fields must be provided" });
+            if (!user_id) {
+                return res.status(401).json({ error: "Unauthorized: User ID not found in token" });
             }
+            const { vehicle_id, start_date, end_date, delivery_location_id, rental_status, total_price } = req.body;
+
+            // // Validasi input
+            // if (!vehicle_id || !start_date || !end_date || !delivery_location_id || !total_price) {
+            //     return res.status(400).json({ error: "All required fields must be provided" });
+            // }
 
             // Pastikan rental_status valid atau gunakan default
             const status = rental_status ? rental_status as RentalStatus : RentalStatus.pending;
@@ -20,9 +26,10 @@ class RentalController {
                 vehicle_id: Number(vehicle_id),
                 start_date: new Date(start_date),
                 end_date: new Date(end_date),
-                delivery_location,
+                delivery_location_id,
                 rental_status: status,
                 total_price: Number(total_price),
+                user_id
             });
 
             res.status(201).json({ message: "Rental created successfully", data: newRental });

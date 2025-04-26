@@ -2,6 +2,8 @@
 
 import { Request, Response } from "express";
 import { UserService } from "../models/userModel";
+import {uploadFile} from "../utils/upload_file";
+import {BannerModel} from "../models/bannerModel";
 
 class UserController {
   // Fungsi untuk membuat pengguna baru
@@ -51,7 +53,21 @@ class UserController {
   static async updateUser(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const data = req.body;
+      const {data} = req.body;
+      const image = req.file; // File yang di-upload
+
+      let uploadResult;
+      if (image && image.buffer) {
+        uploadResult = await uploadFile({
+          fileBuffer: image.buffer,
+          filename: image.filename,
+          mimeType: image.mimetype,
+        });
+      }
+
+      if(!uploadResult) {
+        return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
+      }
 
       if (!id) {
         return res.status(400).json({ error: "User ID is required" });
@@ -62,8 +78,16 @@ class UserController {
         return res.status(403).json({ error: "Updating password is not allowed" });
       }
 
+      const updateData = {
+        ...data,
+        public_url_image: uploadResult.url,
+        secure_url_image: uploadResult.secure_url,
+      }
+
+      const updatedUser = await UserService.updateUser(Number(id), updateData);
+
       // Perbarui pengguna
-      const updatedUser = await UserService.updateUser(Number(id), data);
+      // const updatedUser = await UserService.updateUser(Number(id), data);
       res.status(200).json({ message: "User updated successfully", user: updatedUser });
     } catch (error) {
       console.error("Error updating user:", error);

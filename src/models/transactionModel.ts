@@ -10,7 +10,8 @@ export class TransactionModel {
         transaction_date: Date;
         payment_method: PaymentMethod;
         total_amount: number;
-        local_image_path?: string;
+        public_url_image?: string;
+        secure_url_image?: string;
     }) {
         return prisma.transaction.create({
             data,
@@ -27,7 +28,16 @@ export class TransactionModel {
 
     // Fungsi untuk memperbarui transaksi berdasarkan ID
     // @ts-ignore
-    static async update(id: number, data: Partial<Omit<typeof data, "id">>) {
+    static async update(id: number, data:{
+        user_id?: number;
+        rental_id?: number;
+        payment_status?: PaymentStatus;
+        transaction_date?: Date;
+        payment_method?: PaymentMethod;
+        total_amount?: number;
+        public_url_image?: string;
+        secure_url_image?: string;
+    }) {
         const existingTransaction = await prisma.transaction.findUnique({ where: { id } });
 
         if (!existingTransaction) {
@@ -36,9 +46,7 @@ export class TransactionModel {
 
         return prisma.transaction.update({
             where: { id },
-            data: {
-                ...data,
-            },
+            data,
         });
     }
 
@@ -60,7 +68,8 @@ export class TransactionModel {
                 transaction_date: true,
                 payment_method: true,
                 total_amount: true,
-                local_image_path: true,
+                public_url_image: true,
+                secure_url_image: true,
                 created_at: true,
                 updated_at: true,
                 user: true,

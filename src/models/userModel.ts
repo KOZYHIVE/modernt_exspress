@@ -12,6 +12,8 @@ export class UserService {
     password: string;
     role?: Role;
     status?: UserStatus;
+    secure_url_profile?: string;
+    public_url_profile?: string;
   }) {
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
@@ -35,13 +37,13 @@ export class UserService {
   static async getUser(id: number) {
     return prisma.user.findMany({
       where: { id },
-      include: {
-        detail_user: true,
-        logs: true,
-        refresh_token: true,
-        banner: true,
-        rental: true,
-        transaction: true,
+      select: {
+        username: true,
+        email: true,
+        role: true,
+        status: true,
+        secure_url_profile: true,
+        public_url_profile: true,
       },
     });
   }
@@ -49,20 +51,22 @@ export class UserService {
   // Fungsi untuk memperbarui pengguna berdasarkan ID
   static updateUser(
       id: number,
-      data: Partial<{ email: string; username: string; role: Role; status: UserStatus; password?: string }>
+      data: Partial<{ email: string; username: string; role: Role; status: UserStatus; password?: string; secure_url_profile?: string; public_url_profile?: string; }>
   ) {
     // Hapus password dari data sebelum update
     const { password, ...updateData } = data;
 
     return prisma.user.update({
       where: { id },
-      data: updateData, // Pastikan hanya properti yang diperbolehkan yang diperbarui
+      data: updateData,
       select: {
         id: true,
         username: true,
         email: true,
         role: true,
         status: true,
+        secure_url_profile: true,
+        public_url_profile: true,
         created_at: true,
         updated_at: true,
       },
@@ -98,6 +102,8 @@ export class UserService {
         email: true,
         role: true,
         status: true,
+        secure_url_profile: true,
+        public_url_profile: true,
         created_at: true,
         updated_at: true,
       },
@@ -120,6 +126,8 @@ export class UserService {
         username: true,
         email: true,
         password: true,
+        secure_url_profile: true,
+        public_url_profile: true,
         role: true,
         otp: true,
       },
@@ -136,6 +144,8 @@ export class UserService {
         email: true,
         password: false,
         role: true,
+        secure_url_profile: true,
+        public_url_profile: true,
       },
     });
   };
@@ -150,6 +160,8 @@ export class UserService {
         email: true,
         password: false,
         role: true,
+        secure_url_profile: true,
+        public_url_profile: true,
       },
       skip: skip, // Mulai dari data keberapa
       take: take, // Ambil berapa data

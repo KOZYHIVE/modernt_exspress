@@ -3,6 +3,7 @@
 import { Request, Response } from "express";
 import { TransactionModel } from "../models/transactionModel";
 import { PaymentStatus, PaymentMethod } from "@prisma/client";
+import {uploadFile} from "../utils/upload_file";
 
 
 class TransactionController {
@@ -12,31 +13,28 @@ class TransactionController {
             const { user_id, rental_id, payment_status, transaction_date, payment_method, total_amount } = req.body;
             const image = req.file; // File yang di-upload
 
-            if (!user_id || !rental_id || !payment_status || !transaction_date || !payment_method || !total_amount) {
-                return res.status(400).json({ error: "All required fields must be provided" });
+            let uploadResult;
+            if (image && image.buffer) {
+                uploadResult = await uploadFile({
+                    fileBuffer: image.buffer,
+                    filename: image.filename,
+                    mimeType: image.mimetype,
+                });
             }
 
-            // Validasi status pembayaran
-            if (!(payment_status in PaymentStatus)) {
-                return res.status(400).json({ error: "Invalid payment status" });
+            if(!uploadResult) {
+                return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
             }
-
-            // Validasi metode pembayaran
-            if (!(payment_method in PaymentMethod)) {
-                return res.status(400).json({ error: "Invalid payment method" });
-            }
-
-            // Simpan path gambar jika ada
-            const local_image_path = image ? `images/${image.filename}` : undefined;
 
             const newTransaction = await TransactionModel.create({
                 user_id: Number(user_id),
                 rental_id: Number(rental_id),
-                payment_status: payment_status as PaymentStatus,
+                payment_status,
                 transaction_date: new Date(transaction_date),
-                payment_method: payment_method as PaymentMethod,
+                payment_method,
                 total_amount: Number(total_amount),
-                local_image_path,
+                public_url_image: uploadResult.url,
+                secure_url_image: uploadResult.secure_url,
             });
 
             res.status(201).json({ message: "Transaction created successfully", data: newTransaction });
@@ -71,28 +69,37 @@ class TransactionController {
     static async updateTransaction(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const data = req.body;
+            const { user_id, rental_id, payment_status, transaction_date, payment_method, total_amount } = req.body;
+            const image = req.file; // File yang di-upload
 
-            if (!id) {
-                return res.status(400).json({ error: "Transaction ID is required" });
+            let uploadResult;
+            if (image && image.buffer) {
+                uploadResult = await uploadFile({
+                    fileBuffer: image.buffer,
+                    filename: image.filename,
+                    mimeType: image.mimetype,
+                });
             }
 
-            // Validasi payment status jika ada perubahan
-            if (data.payment_status && !(data.payment_status in PaymentStatus)) {
-                return res.status(400).json({ error: "Invalid payment status" });
+            if(!uploadResult) {
+                return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
             }
 
-            // Validasi payment method jika ada perubahan
-            if (data.payment_method && !(data.payment_method in PaymentMethod)) {
-                return res.status(400).json({ error: "Invalid payment method" });
-            }
+            const newTransaction = await TransactionModel.update(Number(id),{
+                user_id: Number(user_id),
+                rental_id: Number(rental_id),
+                payment_status,
+                transaction_date: new Date(transaction_date),
+                payment_method,
+                total_amount: Number(total_amount),
+                public_url_image: uploadResult.url,
+                secure_url_image: uploadResult.secure_url,
+            });
 
-            const updatedTransaction = await TransactionModel.update(Number(id), data);
-
-            res.status(200).json({ message: "Transaction updated successfully", data: updatedTransaction });
+            res.status(201).json({ message: "Transaction created successfully", data: newTransaction });
         } catch (error) {
-            console.error("Error updating transaction:", error);
-            res.status(500).json({ error: "Failed to update transaction" });
+            console.error("Error creating transaction:", error);
+            res.status(500).json({ error: "Failed to create transaction" });
         }
     }
 

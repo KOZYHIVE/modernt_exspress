@@ -1,18 +1,7 @@
 import express from "express";
 import TransactionController from "../controllers/transactionController";
 import { authMiddleware } from "../middlewares/authMiddleware";
-import multer from "multer";
-
-// Konfigurasi Multer untuk upload gambar
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, "images/"); // Direktori penyimpanan gambar
-    },
-    filename: function (req, file, cb) {
-        cb(null, `${Date.now()}-${file.originalname}`); // Nama file unik
-    },
-});
-const upload = multer({ storage });
+import {upload} from "../middlewares/upload";
 
 const router = express.Router();
 
@@ -26,7 +15,7 @@ router.get("/", authMiddleware, TransactionController.getTransactions);
 router.get("/:id", authMiddleware, TransactionController.getTransactionById);
 
 // Memperbarui transaksi berdasarkan ID (dengan autentikasi)
-router.put("/:id", authMiddleware, TransactionController.updateTransaction);
+router.put("/:id", authMiddleware, upload.single("image"), TransactionController.updateTransaction);
 
 // Menghapus transaksi berdasarkan ID (dengan autentikasi)
 router.delete("/:id", authMiddleware, TransactionController.deleteTransaction);

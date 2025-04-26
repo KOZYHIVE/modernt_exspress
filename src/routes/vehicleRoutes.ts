@@ -17,7 +17,7 @@ router.get("/", VehicleController.getVehicles);
 router.get("/:id", VehicleController.getVehicleById);
 
 // Memperbarui kendaraan berdasarkan ID (dengan autentikasi)
-router.put("/:id", authMiddleware, VehicleController.updateVehicle);
+router.put("/:id", authMiddleware, upload.single("image"), VehicleController.updateVehicle);
 
 // Menghapus kendaraan berdasarkan ID (dengan autentikasi)
 router.delete("/:id", authMiddleware, VehicleController.deleteVehicle);
