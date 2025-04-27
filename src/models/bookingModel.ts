@@ -145,4 +145,20 @@ export class BookingModel {
             take: payload.itemsPerPage,
         });
     }
+
+    // Fungsi untuk mendapatkan daftar booking berdasarkan user_id dengan paginasi
+    static async getAllByUser(payload: { user_id: number; itemsPerPage: number; skip: number }) {
+        const { user_id, itemsPerPage, skip } = payload;
+
+        return prisma.booking.findMany({
+            where: { user_id },
+            include: {
+                user: true,
+                vehicle: true,
+                delivery: true,
+            },
+            skip,
+            take: itemsPerPage,
+        });
+    }
 }

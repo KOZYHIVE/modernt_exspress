@@ -127,29 +127,8 @@ class BookingController {
         }
     }
 
-    // Fungsi untuk mendapatkan booking berdasarkan ID dengan role user
-    static async getBookingByIdRoleUser(req: Request, res: Response) {
-        try {
-            const { id } = req.params;
-            const user_id = req.user?.userId;
-
-            if (!id || !user_id) {
-                return res.status(400).json({ error: "Booking ID and User ID are required" });
-            }
-
-            const booking = await BookingModel.getByIdRoleUser(Number(id), Number(user_id));
-            if (!booking) {
-                return res.status(404).json({ error: "Booking not found or unauthorized access" });
-            }
-
-            res.status(200).json({ statusCode: 200, message: "Booking retrieved successfully", data: booking });
-        } catch (error) {
-            console.error("Error retrieving booking:", error);
-            res.status(500).json({ error: "Failed to retrieve booking" });
-        }
-    }
-
     // Fungsi untuk memperbarui booking berdasarkan ID dengan role user
+
     static async updateBookingByIdRoleUser(req: Request, res: Response) {
         try {
             const { id } = req.params;
@@ -184,8 +163,8 @@ class BookingController {
             res.status(500).json({ error: "Failed to update booking" });
         }
     }
-
     // Fungsi untuk memperbarui booking berdasarkan ID dengan role admin
+
     static async updateBookingByIdRoleAdmin(req: Request, res: Response) {
         try {
             const { id } = req.params;
@@ -222,8 +201,8 @@ class BookingController {
             res.status(500).json({ error: "Failed to update booking" });
         }
     }
-
     // Fungsi untuk menghapus booking berdasarkan ID
+
     static async deleteBooking(req: Request, res: Response) {
         try {
             const { id } = req.params;
@@ -239,8 +218,8 @@ class BookingController {
             res.status(500).json({ error: "Failed to delete booking" });
         }
     }
-
     // Fungsi untuk mendapatkan daftar booking dengan paginasi
+
     static async getBookings(req: Request, res: Response) {
         try {
             const { page = 1, pagesize = 10 } = req.query;
@@ -260,6 +239,64 @@ class BookingController {
             });
         } catch (error) {
             res.status(500).json({ error: "Failed to retrieve bookings" });
+        }
+    }
+    // Fungsi untuk mendapatkan semua booking berdasarkan user_id dengan paginasi
+    static async getAllByUser(req: Request, res: Response) {
+        try {
+            // Ambil user_id dari middleware (JWT)
+            const user_id = req.user?.userId;
+
+            if (!user_id) {
+                return res.status(401).json({ error: "Unauthorized: User ID not found in token" });
+            }
+
+            const { page = 1, pagesize = 10 } = req.query;
+            const skip = (Number(page) - 1) * Number(pagesize);
+
+            if (!user_id) {
+                return res.status(401).json({ error: "Unauthorized: User ID not found" });
+            }
+
+            const bookings = await BookingModel.getAllByUser({
+                user_id: Number(user_id),
+                itemsPerPage: Number(pagesize),
+                skip,
+            });
+
+            res.status(200).json({
+                message: "Bookings retrieved successfully",
+                data: bookings,
+                pagination: {
+                    page: Number(page),
+                    pagesize: Number(pagesize),
+                },
+            });
+        } catch (error) {
+            console.error("Error retrieving bookings:", error);
+            res.status(500).json({ error: "Failed to retrieve bookings" });
+        }
+    }
+
+    // Fungsi untuk mendapatkan booking berdasarkan ID dengan role user
+    static async getBookingByIdRoleUser(req: Request, res: Response) {
+        try {
+            const { id } = req.params;
+            const user_id = req.user?.userId;
+
+            if (!id || !user_id) {
+                return res.status(400).json({ error: "Booking ID and User ID are required" });
+            }
+
+            const booking = await BookingModel.getByIdRoleUser(Number(id), Number(user_id));
+            if (!booking) {
+                return res.status(404).json({ error: "Booking not found or unauthorized access" });
+            }
+
+            res.status(200).json({ statusCode: 200, message: "Booking retrieved successfully", data: booking });
+        } catch (error) {
+            console.error("Error retrieving booking:", error);
+            res.status(500).json({ error: "Failed to retrieve booking" });
         }
     }
 }
