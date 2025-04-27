@@ -118,9 +118,9 @@ export class VehicleModel {
             AND: [
                 query ? {
                     OR: [
-                        { vehicle_name: { contains: query, lte: 'insensitive' } },
-                        { description: { contains: query, lte: 'insensitive' } },
-                        { specification_list: { contains: query, lte: 'insensitive' } },
+                        { vehicle_name: { lte: query } },
+                        { description: { lte: query } },
+                        { specification_list: { lte: query } },
                     ],
                 } : {},
                 vehicle_type ? { vehicle_type } : {},
@@ -128,9 +128,6 @@ export class VehicleModel {
                 availability_status ? { availability_status } : {},
             ],
         };
-
-        console.log("Search Payload:", payload);
-        console.log("Where Clause:", whereClause);
 
         const vehicles = await prisma.vehicle.findMany({
             where: whereClause,
@@ -142,8 +139,6 @@ export class VehicleModel {
             skip,
             take: itemsPerPage,
         });
-
-        console.log("Search Results:", vehicles);
 
         return vehicles;
     }
