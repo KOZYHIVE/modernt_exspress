@@ -5,6 +5,24 @@ import {BankTransfer, PaymentStatus, RentalStatus} from '@prisma/client';
 
 export class BookingModel {
     // Fungsi untuk membuat booking baru
+    // static async create(data: {
+    //     user_id: number;
+    //     vehicle_id: number;
+    //     rental_period: number;
+    //     start_date: Date;
+    //     end_date: Date;
+    //     delivery_location: number;
+    //     rental_status?: RentalStatus;
+    //     notes?: string;
+    //     bank_transfer: number;
+    //     total_price: number;
+    //     secure_url_image?: string;
+    //     public_url_image?: string;
+    //     payment_proof?: PaymentStatus;
+    // }) {
+    //     return prisma.booking.create({ data });
+    // }
+
     static async create(data: {
         user_id: number;
         vehicle_id: number;
@@ -14,13 +32,39 @@ export class BookingModel {
         delivery_location: number;
         rental_status?: RentalStatus;
         notes?: string;
-        bank_transfer: number;
+        bank_transfer: number; // Pastikan ini adalah foreign key ke BankTransfer
         total_price: number;
         secure_url_image?: string;
         public_url_image?: string;
         payment_proof?: PaymentStatus;
     }) {
-        return prisma.booking.create({ data });
+        // Membuat booking baru di database
+        const booking = await prisma.booking.create({
+            data,
+            include: {
+                vehicle: { // Memuat nama kendaraan
+                    select: {
+                        vehicle_name: true,
+                    },
+                },
+                bank: { // Memuat informasi bank
+                    select: {
+                        name_bank: true,
+                        number: true,
+                    },
+                },
+            },
+        });
+
+        // Mengembalikan data yang diminta dalam format yang sesuai
+        return {
+            vehicle_name: booking.vehicle?.vehicle_name || 'Unknown Vehicle',
+            date_range: `${booking.start_date.toISOString().split('T')[0]} - ${booking.end_date.toISOString().split('T')[0]}`,
+            rental_period: booking.rental_period,
+            total_price: booking.total_price,
+            name_bank: booking.bank?.name_bank || 'Unknown Bank',
+            number: booking.bank?.number || 'Unknown Number',
+        };
     }
 
     // Fungsi untuk mendapatkan booking berdasarkan ID
