@@ -13,7 +13,7 @@ export class BankTransferController {
             }
             const { name_bank, number } = req.body;
             const newBankTransfer = await BankTransferModel.create({ user_id, name_bank, number });
-            res.status(201).json({ message: "Bank transfer created successfully", data: newBankTransfer });
+            res.status(201).json({ statusCode: 200, message: "Bank transfer created successfully", data: newBankTransfer });
         } catch (error) {
             console.error("Error creating bank transfer:", error);
             res.status(500).json({ error: "Failed to create bank transfer" });
@@ -32,7 +32,7 @@ export class BankTransferController {
             const { id } = req.params;
             const { name_bank, number } = req.body;
             const updatedBankTransfer = await BankTransferModel.update(Number(id), { user_id, name_bank, number });
-            res.status(200).json({ message: "Bank transfer updated successfully", data: updatedBankTransfer });
+            res.status(200).json({ statusCode: 200, message: "Bank transfer updated successfully", data: updatedBankTransfer });
         } catch (error) {
             console.error("Error updating bank transfer:", error);
             // @ts-ignore
@@ -45,7 +45,7 @@ export class BankTransferController {
         try {
             const { id } = req.params;
             await BankTransferModel.delete(Number(id));
-            res.status(200).json({ message: "Bank transfer deleted successfully" });
+            res.status(200).json({ statusCode: 200, message: "Bank transfer deleted successfully" });
         } catch (error) {
             console.error("Error deleting bank transfer:", error);
             res.status(500).json({ error: "Failed to delete bank transfer" });
@@ -60,9 +60,8 @@ export class BankTransferController {
                 itemsPerPage: Number(itemsPerPage),
                 skip: Number(skip),
             });
-            res.status(200).json({ data: bankTransfers });
+            res.status(200).json({ statusCode: 200, data: bankTransfers });
         } catch (error) {
-            console.error("Error fetching bank transfers:", error);
             res.status(500).json({ error: "Failed to fetch bank transfers" });
         }
     }

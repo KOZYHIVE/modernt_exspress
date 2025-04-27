@@ -13,6 +13,9 @@ router.post("/", authMiddleware, upload.single("image"), VehicleController.creat
 // Mendapatkan semua kendaraan dengan paginasi
 router.get("/", VehicleController.getVehicles);
 
+// Mendapatkan semua pencarian kendaraan dengan paginasi
+router.get("/search", VehicleController.searchVehicles);
+
 // Mendapatkan detail kendaraan berdasarkan ID
 router.get("/:id", VehicleController.getVehicleById);
 

@@ -1,35 +1,38 @@
+// models/BrandModel.ts
+
 import prisma from '../config/prisma';
 
 export class BrandModel {
     // Fungsi untuk membuat brand baru
     static async create(data: {
         brand_name: string;
-        secure_url_image: string;
-        public_url_image: string;
+        public_url_image?: string;
+        secure_url_image?: string;
     }) {
-        return prisma.brand.create({
-            data,
-        });
+        return prisma.brand.create({ data });
     }
 
     // Fungsi untuk mendapatkan brand berdasarkan ID
     static async getById(id: number) {
         return prisma.brand.findUnique({
             where: { id },
-            include: { vehicles: true },
+            include: { Vehicle: true },
+        });
+    }
+
+    // Fungsi untuk mendapatkan semua brand
+    static async getAll() {
+        return prisma.brand.findMany({
+            include: { Vehicle: true },
         });
     }
 
     // Fungsi untuk memperbarui brand berdasarkan ID
-    static async update(
-        id: number,
-        data: {
-            brand_name?: string;
-            secure_url_image?: string;
-            public_url_image?: string;
-        }
-    ) {
-        // Periksa apakah record ada sebelum update
+    static async update(id: number, data: {
+        brand_name?: string;
+        public_url_image?: string;
+        secure_url_image?: string;
+    }) {
         const existingBrand = await prisma.brand.findUnique({ where: { id } });
 
         if (!existingBrand) {
@@ -38,33 +41,12 @@ export class BrandModel {
 
         return prisma.brand.update({
             where: { id },
-            data: {
-                ...data,
-            },
+            data,
         });
     }
 
     // Fungsi untuk menghapus brand berdasarkan ID
     static async delete(id: number) {
-        return prisma.brand.delete({
-            where: { id },
-        });
-    }
-
-    // Fungsi untuk mendapatkan daftar brand dengan paginasi
-    static async getAll(payload: { itemsPerPage: number; skip: number }) {
-        return prisma.brand.findMany({
-            select: {
-                id: true,
-                brand_name: true,
-                secure_url_image: true,
-                public_url_image: true,
-                created_at: true,
-                updated_at: true,
-                vehicles: true,
-            },
-            skip: payload.skip,
-            take: payload.itemsPerPage,
-        });
+        return prisma.brand.delete({ where: { id } });
     }
 }

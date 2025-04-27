@@ -1,12 +1,16 @@
+// models/BannerModel.ts
+
 import prisma from '../config/prisma';
 
 export class BannerModel {
     // Fungsi untuk membuat banner baru
     static async create(data: {
         user_id: number;
+        vehicle_id: number;
+        title: string;
         description: string;
-        secure_url_image: string;
-        public_url_image: string;
+        secure_url_image?: string;
+        public_url_image?: string;
     }) {
         return prisma.banner.create({ data });
     }
@@ -15,14 +19,40 @@ export class BannerModel {
     static async getById(id: number) {
         return prisma.banner.findUnique({
             where: { id },
-            include: { user: true },
+            include: {
+                user: true,
+                vehicle: true,
+            },
+        });
+    }
+
+    // Fungsi untuk mendapatkan banner berdasarkan user_id
+    static async getByUserId(user_id: number) {
+        return prisma.banner.findMany({
+            where: { user_id },
+            include: {
+                user: true,
+                vehicle: true,
+            },
+        });
+    }
+
+    // Fungsi untuk mendapatkan banner berdasarkan vehicle_id
+    static async getByVehicleId(vehicle_id: number) {
+        return prisma.banner.findMany({
+            where: { vehicle_id },
+            include: {
+                user: true,
+                vehicle: true,
+            },
         });
     }
 
     // Fungsi untuk memperbarui banner berdasarkan ID
-    // @ts-ignore
     static async update(id: number, data: {
         user_id?: number;
+        vehicle_id?: number;
+        title?: string;
         description?: string;
         secure_url_image?: string;
         public_url_image?: string;
@@ -50,9 +80,11 @@ export class BannerModel {
             select: {
                 id: true,
                 user_id: true,
+                vehicle_id: true,
+                title: true,
                 description: true,
-                public_url_image: true,
                 secure_url_image: true,
+                public_url_image: true,
                 created_at: true,
                 updated_at: true,
             },

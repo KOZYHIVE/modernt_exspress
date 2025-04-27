@@ -10,15 +10,13 @@ import helmet from "helmet";
 import welcomeRoutes from "./routes/welcomeRoutes";
 import userRoutes from "./routes/userRoutes";
 import authRoutes from "./routes/authRoutes";
-import addressDeliveryRoutes from "./routes/addressDeliveryRoutes";
+import addressRoutes from "./routes/addressRoutes";
 import brandRoutes from "./routes/brandRoutes";
 import vehicleRoutes  from "./routes/vehicleRoutes";
-import rentalRoutes from "./routes/rentalRoutes";
-import transactionRoutes from "./routes/transactionRoutes";
+import bookingRoutes from "./routes/bookingRoutes";
 import bannerRoutes from "./routes/bannerRoutes";
-import fcmRoutes from "./routes/fcmRoutes";
-import tokenRoutes from "./routes/tokenRoutes";
 import bankTransferRoutes from "./routes/bankTransferRoutes";
+import dashboardRoutes from "./routes/dashboardRoutes";
 
 // Initialize dotenv
 dotenv.config();
@@ -40,15 +38,13 @@ app.use("/", welcomeRoutes);
 // app.use(jsonOnlyMiddleware);
 app.use("/api/users", userRoutes);
 app.use("/api/auth", authRoutes);
-app.use("/api/address-delivery", addressDeliveryRoutes);
+app.use("/api/address", addressRoutes);
 app.use("/api/brands", brandRoutes);
 app.use("/api/vehicles", vehicleRoutes);
-app.use("/api/rentals", rentalRoutes);
-app.use("/api/transactions", transactionRoutes);
+app.use("/api/book", bookingRoutes);
 app.use("/api/banners", bannerRoutes);
-app.use("/api/fcm", fcmRoutes);
-app.use("/api/tokens", tokenRoutes);
 app.use("/api/bank-transfer", bankTransferRoutes)
+app.use("/api/dashboard", dashboardRoutes)
 
 // Start server
 const PORT = process.env.PORT || 8000;

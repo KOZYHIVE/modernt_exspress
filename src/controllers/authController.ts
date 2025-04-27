@@ -3,8 +3,7 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import nodemailer from "nodemailer";
-import { UserService } from "../models/userModel";
+import { UserModel } from "../models/userModel";
 import RefreshTokenModel from "../models/refreshToken";
 import {SendEmailResetPassword} from "../utils/SendEmailResetPassword";
 import prisma from '../config/prisma';
@@ -20,19 +19,19 @@ class AuthController {
             }
 
             // Cek apakah email sudah terdaftar
-            const existingUser = await UserService.getUserByEmail(email);
+            const existingUser = await  UserModel.getByEmail(email);
             if (existingUser) {
                 return res.status(409).json({ error: "Email already registered" });
             }
 
             // Buat pengguna baru
-            const newUser = await UserService.createUser({
+            const newUser = await  UserModel.create({
                 username,
                 email,
                 password,
             });
 
-            res.status(201).json({ message: "User registered successfully", user: newUser });
+            res.status(201).json({ statusCode: 201, message: "User registered successfully", user: newUser });
         } catch (error) {
             console.error("Error during registration:", error);
             res.status(500).json({ error: "Failed to register user" });
@@ -49,7 +48,7 @@ class AuthController {
             }
 
             // Cari pengguna berdasarkan email
-            const user = await UserService.getUserByEmail(email);
+            const user = await  UserModel.getByEmail(email);
             if (!user) {
                 return res.status(404).json({ error: "User not found" });
             }
@@ -62,11 +61,25 @@ class AuthController {
 
             // Generate token
             const payload = { userId: user.id, email: user.email };
-            const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN!, { expiresIn: "10m" });
+            const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN!, { expiresIn: "15m" });
             const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_TOKEN!, { expiresIn: "7d" });
 
             // Simpan refresh token ke database menggunakan RefreshTokenModel
             await RefreshTokenModel.create(user.id, refreshToken);
+
+            const userData = {
+                id: user.id,
+                username: user.username,
+                email: user.email,
+                phone: user.phone,
+                secure_url_profile: user.secure_url_profile,
+                public_url_profile: user.public_url_profile,
+                role: user.role,
+                status: user.status,
+                otp: user.otp,
+                created_at: user.created_at,
+                updated_at: user.updated_at,
+            };
 
             // Simpan refresh token ke cookie
             res.cookie("refresh_token", refreshToken, {
@@ -76,7 +89,7 @@ class AuthController {
                 maxAge: 7 * 24 * 60 * 60 * 1000, // 1 minggu
             });
 
-            res.status(200).json({ message: "Login successful", refreshToken, accessToken });
+            res.status(200).json({ statusCode: 200, message: "Login successful", refreshToken, accessToken, user: userData });
         } catch (error) {
             console.error("Error during login:", error);
             res.status(500).json({ error: "Failed to login" });
@@ -107,14 +120,14 @@ class AuthController {
             }
 
             // Cari pengguna berdasarkan ID dari refresh token
-            const user = await UserService.getUserById(decoded.userId);
+            const user = await  UserModel.getById(decoded.userId);
             if (!user) {
                 return res.status(403).json({ error: "User not found for this refresh token" });
             }
 
             // Generate new access token
             const payload = { userId: user.id, email: user.email };
-            const newAccessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN!, { expiresIn: "10m" });
+            const newAccessToken = jwt.sign(payload, process.env.JWT_ACCESS_TOKEN!, { expiresIn: "15m" });
 
             // Set new access token ke cookie
             res.cookie("access_token", newAccessToken, {
@@ -123,7 +136,7 @@ class AuthController {
                 sameSite: "strict",
             });
 
-            res.status(200).json({ message: "New access token generated", accessToken: newAccessToken });
+            res.status(200).json({ statusCode: 200, message: "New access token generated", accessToken: newAccessToken });
         } catch (error) {
             console.error("Error refreshing token:", error);
             res.status(500).json({ error: "Failed to refresh token" });
@@ -146,7 +159,7 @@ class AuthController {
             res.clearCookie("refresh_token");
             res.clearCookie("access_token");
 
-            res.status(200).json({ message: "Logged out successfully" });
+            res.status(200).json({ statusCode: 200, message: "Logged out successfully" });
         } catch (error) {
             console.error("Error during logout:", error);
             res.status(500).json({ error: "Failed to logout" });
@@ -163,9 +176,10 @@ class AuthController {
             }
 
             // Cari pengguna berdasarkan email
-            const user = await UserService.getUserByEmail(email);
+            const user = await  UserModel.getByEmail(email);
             if (!user) {
                 return res.status(200).json({
+                    statusCode: 200,
                     message: "OTP code has been sent to your email if registered.",
                 });
             }
@@ -176,7 +190,7 @@ class AuthController {
             // Simpan OTP di database
             await prisma.user.update({
                 where: { email },
-                data: { otp }, // Nilai OTP langsung disimpan sebagai number
+                data: { otp: otp.toString() }, // Nilai OTP disimpan sebagai string
             });
 
             // Buat konten email dalam format HTML
@@ -196,6 +210,7 @@ class AuthController {
             );
 
             res.status(200).json({
+                statusCode: 200,
                 message: "Reset password link has been sent to your email if registered.",
             });
         } catch (error) {
@@ -244,7 +259,7 @@ class AuthController {
                 data: { password: hashedPassword, otp: null }, // Nilai null valid karena kolom otp diizinkan null
             });
 
-            res.status(200).json({ message: "Password reset successfully" });
+            res.status(200).json({ statusCode: 200, message: "Password reset successfully" });
         } catch (error) {
             console.error("Error resetting password:", error);
             res.status(500).json({ error: "Failed to reset password" });

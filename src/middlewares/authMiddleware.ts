@@ -3,7 +3,7 @@
 import jwt from "jsonwebtoken";
 import { generateToken, decodeAccessToken, decodeRefreshToken, sendRefreshToken } from "../utils/jwt";
 import RefreshTokenModel from "../models/refreshToken";
-import { UserService } from "../models/userModel";
+import {  UserModel } from "../models/userModel";
 import { isBlacklisted } from "../utils/blacklistedToken";
 
 const excludedRoutes = [
@@ -56,7 +56,7 @@ export const authMiddleware = async (req: any, res: any, next: any) => {
             throw new Error("Invalid access token");
         }
 
-        const user = await UserService.getUserById(decodedToken.userId);
+        const user = await  UserModel.getById(decodedToken.userId);
         if (!user) {
             return res.status(401).json({ message: "Unauthorized: User not found" });
         }
@@ -75,7 +75,7 @@ export const authMiddleware = async (req: any, res: any, next: any) => {
                 sendRefreshToken(res, newTokens.refreshToken);
 
                 req.headers["authorization"] = `Bearer ${newTokens.accessToken}`;
-                req.user = await UserService.getUserById(validRefreshToken.user_id);
+                req.user = await  UserModel.getById(validRefreshToken.user_id);
                 return next();
             } else {
                 return res.status(401).json({ message: "Unauthorized: Refresh token is missing" });
@@ -111,7 +111,7 @@ export const authCompanyMiddleware = async (req: any, res: any, next: any) => {
             throw new Error("Invalid access token");
         }
 
-        const user = await UserService.getUserById(decodedToken.userId);
+        const user = await  UserModel.getById(decodedToken.userId);
         if (!user) {
             return res.status(401).json({ message: "Unauthorized: User not found" });
         }
@@ -130,7 +130,7 @@ export const authCompanyMiddleware = async (req: any, res: any, next: any) => {
                 sendRefreshToken(res, newTokens.refreshToken);
 
                 req.headers["authorization"] = `Bearer ${newTokens.accessToken}`;
-                req.user = await UserService.getUserById(validRefreshToken.user_id);
+                req.user = await  UserModel.getById(validRefreshToken.user_id);
                 return next();
             } else {
                 return res.status(401).json({ message: "Unauthorized: Refresh token is missing" });

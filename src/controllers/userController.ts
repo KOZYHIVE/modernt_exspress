@@ -1,27 +1,47 @@
-// src/controllers/UserController.ts
+// controllers/UserController.ts
 
 import { Request, Response } from "express";
-import { UserService } from "../models/userModel";
-import {uploadFile} from "../utils/upload_file";
-import {BannerModel} from "../models/bannerModel";
+import { UserModel } from "../models/userModel";
+import { uploadFile } from "../utils/upload_file";
 
 class UserController {
   // Fungsi untuk membuat pengguna baru
   static async createUser(req: Request, res: Response) {
     try {
-      const { username, email, password, role, status, url_profile, secure_url_profile, public_url_profile } = req.body;
+      const { username, email, password, phone, role, status, otp } = req.body;
 
-      if (!username || !email || !password) {
-        return res.status(400).json({ error: "Username, email, and password are required" });
+      if (!username || !email || !password || !otp) {
+        return res.status(400).json({ error: "Username, email, password, and OTP are required" });
       }
 
-      const newUser = await UserService.createUser({
+      const image = req.file;
+      let uploadResult;
+      if (image && image.buffer) {
+        uploadResult = await uploadFile({
+          fileBuffer: image.buffer,
+          filename: image.filename,
+          mimeType: image.mimetype,
+        });
+      }
+
+      if(!uploadResult) {
+        return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
+      }
+
+
+      const newUser = await UserModel.create({
         username,
         email,
         password,
+        phone,
+        secure_url_profile: uploadResult.secure_url,
+        public_url_profile: uploadResult.url,
+        role,
+        status,
+        otp,
       });
 
-      res.status(201).json({ message: "User created successfully", user: newUser });
+      res.status(201).json({ statusCode: 201, message: "User created successfully", data: newUser });
     } catch (error) {
       console.error("Error creating user:", error);
       res.status(500).json({ error: "Failed to create user" });
@@ -37,12 +57,53 @@ class UserController {
         return res.status(400).json({ error: "User ID is required" });
       }
 
-      const user = await UserService.getUser(Number(id));
+      const user = await UserModel.getById(Number(id));
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
 
-      res.status(200).json({ message: "User retrieved successfully", user });
+      res.status(200).json({ statusCode: 200, message: "User retrieved successfully", data: user });
+    } catch (error) {
+      console.error("Error retrieving user:", error);
+      res.status(500).json({ error: "Failed to retrieve user" });
+    }
+  }
+
+  // Fungsi untuk mendapatkan pengguna berdasarkan username
+  static async getUserByUsername(req: Request, res: Response) {
+    try {
+      const { username } = req.params;
+
+      if (!username) {
+        return res.status(400).json({ error: "Username is required" });
+      }
+
+      const user = await UserModel.getByUsername(username);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.status(200).json({ statusCode: 200, message: "User retrieved successfully", data: user });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to retrieve user" });
+    }
+  }
+
+  // Fungsi untuk mendapatkan pengguna berdasarkan email
+  static async getUserByEmail(req: Request, res: Response) {
+    try {
+      const { email } = req.params;
+
+      if (!email) {
+        return res.status(400).json({ error: "Email is required" });
+      }
+
+      const user = await UserModel.getByEmail(email);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.status(200).json({ statusCode: 200, message: "User retrieved successfully", data: user });
     } catch (error) {
       console.error("Error retrieving user:", error);
       res.status(500).json({ error: "Failed to retrieve user" });
@@ -53,9 +114,13 @@ class UserController {
   static async updateUser(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const {data} = req.body;
-      const image = req.file; // File yang di-upload
+      const { username, email, password, phone, role, status, otp } = req.body;
 
+      if (!id) {
+        return res.status(400).json({ error: "User ID is required" });
+      }
+
+      const image = req.file;
       let uploadResult;
       if (image && image.buffer) {
         uploadResult = await uploadFile({
@@ -69,44 +134,20 @@ class UserController {
         return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
       }
 
-      if (!id) {
-        return res.status(400).json({ error: "User ID is required" });
-      }
 
-      // Cegah perubahan password
-      if (data.password) {
-        return res.status(403).json({ error: "Updating password is not allowed" });
-      }
+      const updatedUser = await UserModel.update(Number(id), {
+        username,
+        email,
+        password,
+        phone,
+        secure_url_profile: uploadResult.secure_url,
+        public_url_profile: uploadResult.url,
+        role,
+        status,
+        otp,
+      });
 
-      const updateData = {
-        ...data,
-        public_url_image: uploadResult.url,
-        secure_url_image: uploadResult.secure_url,
-      }
-
-      const updatedUser = await UserService.updateUser(Number(id), updateData);
-
-      // Perbarui pengguna
-      // const updatedUser = await UserService.updateUser(Number(id), data);
-      res.status(200).json({ message: "User updated successfully", user: updatedUser });
-    } catch (error) {
-      console.error("Error updating user:", error);
-      res.status(500).json({ error: "Failed to update user" });
-    }
-  }
-
-  // Fungsi untuk memperbarui pengguna berdasarkan ID
-  static async updateOTP(req: Request, res: Response) {
-    try {
-      const { id } = req.params;
-      const { otp } = req.body;
-
-      if (!id) {
-        return res.status(400).json({ error: "User ID is required" });
-      }
-
-      const updatedUser = await UserService.updateOTP(Number(id), { otp });
-      res.status(200).json({ message: "User updated successfully", user: updatedUser });
+      res.status(200).json({ statusCode: 200, message: "User updated successfully", data: updatedUser });
     } catch (error) {
       console.error("Error updating user:", error);
       res.status(500).json({ error: "Failed to update user" });
@@ -122,10 +163,9 @@ class UserController {
         return res.status(400).json({ error: "User ID is required" });
       }
 
-      await UserService.deleteUser(Number(id));
-      res.status(200).json({ message: "User deleted successfully" });
+      await UserModel.delete(Number(id));
+      res.status(200).json({ statusCode: 200, message: "User deleted successfully" });
     } catch (error) {
-      console.error("Error deleting user:", error);
       res.status(500).json({ error: "Failed to delete user" });
     }
   }
@@ -135,68 +175,22 @@ class UserController {
     try {
       const { page = 1, pagesize = 10 } = req.query;
 
-      const users = await UserService.getAllUsers(Number(page), Number(pagesize));
-      const totalUsers = await UserService.countAllUsers();
+      const skip = (Number(page) - 1) * Number(pagesize);
+      const take = Number(pagesize);
 
+      const users = await UserModel.getAll({ itemsPerPage: take, skip });
       res.status(200).json({
+        statusCode: 200,
         message: "Users retrieved successfully",
         data: users,
         pagination: {
           page: Number(page),
           pagesize: Number(pagesize),
-          total: totalUsers,
         },
       });
     } catch (error) {
       console.error("Error retrieving users:", error);
       res.status(500).json({ error: "Failed to retrieve users" });
-    }
-  }
-
-  // Fungsi untuk mencari pengguna berdasarkan username atau email
-  static async searchUsers(req: Request, res: Response) {
-    try {
-      // Ambil parameter pencarian dari query string
-      const searchQuery = req.query.q as string;
-
-      // Validasi parameter pencarian
-      if (typeof searchQuery !== "string" || !searchQuery.trim()) {
-        return res.status(400).json({
-          code: 400,
-          message: "Parameter pencarian diperlukan dan harus berupa string.",
-        });
-      }
-
-      // Dapatkan pengguna yang sedang login (authUser)
-      const authUser = req.user; // Pastikan middleware autentikasi menambahkan `req.user`
-
-      if (!authUser) {
-        return res.status(403).json({
-          code: 403,
-          message: "Pengguna tidak valid",
-        });
-      }
-
-      // Cari pengguna berdasarkan query
-      const users = await UserService.searchUser(searchQuery);
-
-      // Filter pengguna agar tidak termasuk pengguna yang sedang login
-      const filteredUsers = users.filter((usr: { id: any; }) => usr.id !== authUser.id);
-
-      // Kirim respons sukses
-      res.status(200).json({
-        code: 200,
-        message: "Pengguna berhasil dikembalikan.",
-        data: {
-          users: filteredUsers,
-        },
-      });
-    } catch (error: any) {
-      console.error("Error searching users:", error);
-      res.status(500).json({
-        code: 500,
-        message: error.message || "Internal Server Error",
-      });
     }
   }
 }
