@@ -7,6 +7,7 @@ export class UserModel {
   // Fungsi untuk membuat pengguna baru
   static async create(data: {
     username: string;
+    full_name?: string;
     email: string;
     password: string;
     phone?: string;
@@ -22,8 +23,6 @@ export class UserModel {
         id: true,
         username: true,
         email: true,
-        secure_url_profile: true,
-        public_url_profile: true,
         role: true,
         status: true,
         created_at: true,
@@ -41,6 +40,8 @@ export class UserModel {
       select: {
         id: true,
         username: true,
+        full_name: true,
+        password: true,
         email: true,
         phone: true,
         secure_url_profile: true,
@@ -61,6 +62,7 @@ export class UserModel {
       select: {
         id: true,
         username: true,
+        full_name: true,
         email: true,
         phone: true,
         secure_url_profile: true,
@@ -81,6 +83,7 @@ export class UserModel {
       select: {
         id: true,
         username: true,
+        full_name: true,
         email: true,
         password:true,
         phone: true,
@@ -98,12 +101,12 @@ export class UserModel {
   // Fungsi untuk memperbarui pengguna berdasarkan ID
   static async update(id: number, data: {
     username?: string;
+    full_name?: string;
     email?: string;
     password?: string;
     phone?: string;
     secure_url_profile?: string;
     public_url_profile?: string;
-    role?: Role;
     status?: Status;
     otp?: string;
   }) {
@@ -119,6 +122,7 @@ export class UserModel {
       select: {
         id: true,
         username: true,
+        full_name: true,
         email: true,
         phone: true,
         secure_url_profile: true,
@@ -143,6 +147,7 @@ export class UserModel {
       select: {
         id: true,
         username: true,
+        full_name: true,
         email: true,
         phone: true,
         secure_url_profile: true,
