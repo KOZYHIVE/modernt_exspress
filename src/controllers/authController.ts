@@ -19,16 +19,19 @@ class AuthController {
             }
 
             // Cek apakah email sudah terdaftar
-            const existingUser = await  UserModel.getByEmail(email);
+            const existingUser = await UserModel.getByEmail(email);
             if (existingUser) {
                 return res.status(409).json({ error: "Email already registered" });
             }
 
+            // Hash password menggunakan bcrypt
+            const hashedPassword = await bcrypt.hash(password, 10);
+
             // Buat pengguna baru
-            const newUser = await  UserModel.create({
+            const newUser = await UserModel.create({
                 username,
                 email,
-                password,
+                password: hashedPassword,
             });
 
             res.status(201).json({ statusCode: 201, message: "User registered successfully", user: newUser });

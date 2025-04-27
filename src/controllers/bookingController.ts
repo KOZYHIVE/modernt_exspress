@@ -22,6 +22,8 @@ class BookingController {
                 end_date,
                 delivery_location,
                 rental_status,
+                bank_transfer,
+                notes,
                 payment_proof,
             } = req.body;
 
@@ -54,6 +56,8 @@ class BookingController {
                 delivery_location: Number(delivery_location),
                 rental_status,
                 total_price,
+                bank_transfer,
+                notes,
                 payment_proof,
             });
 

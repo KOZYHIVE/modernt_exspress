@@ -84,11 +84,14 @@ model Booking {
   secure_url_image  String?
   public_url_image  String?
   payment_proof   PaymentStatus @default(pending)
+  bank_transfer     Int
+  notes             String?
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
   user              User          @relation(fields: [user_id], references: [id])
   vehicle           Vehicle       @relation(fields: [vehicle_id], references: [id])
   delivery          Address       @relation(fields: [delivery_location], references: [id])
+  bank              BankTransfer @relation(fields: [bank_transfer], references: [id])
 }
 
 model Vehicle {
@@ -178,4 +181,5 @@ model BankTransfer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  booking Booking[]
 }

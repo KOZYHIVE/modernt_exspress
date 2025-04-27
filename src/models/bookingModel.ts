@@ -1,7 +1,7 @@
 // models/BookingModel.ts
 
 import prisma from '../config/prisma';
-import { PaymentStatus, RentalStatus } from '@prisma/client';
+import {BankTransfer, PaymentStatus, RentalStatus} from '@prisma/client';
 
 export class BookingModel {
     // Fungsi untuk membuat booking baru
@@ -13,6 +13,8 @@ export class BookingModel {
         end_date: Date;
         delivery_location: number;
         rental_status?: RentalStatus;
+        notes?: string;
+        bank_transfer: number;
         total_price: number;
         secure_url_image?: string;
         public_url_image?: string;
@@ -41,6 +43,7 @@ export class BookingModel {
                 user: true,
                 vehicle: true,
                 delivery: true,
+                bank: true,
             },
         });
     }
@@ -53,6 +56,7 @@ export class BookingModel {
                 user: true,
                 vehicle: true,
                 delivery: true,
+                bank: true,
             },
         });
     }
@@ -65,6 +69,7 @@ export class BookingModel {
                 user: true,
                 vehicle: true,
                 delivery: true,
+                bank: true,
             },
         }).then((booking) => {
             if (!booking || booking.user_id !== user_id) {
@@ -101,6 +106,7 @@ export class BookingModel {
         delivery_location?: number;
         rental_status?: RentalStatus;
         total_price?: number;
+        bank_transfer?: number;
         secure_url_image?: string;
         public_url_image?: string;
         payment_proof?: PaymentStatus;
@@ -135,6 +141,7 @@ export class BookingModel {
                 delivery_location: true,
                 rental_status: true,
                 total_price: true,
+                bank_transfer: true,
                 secure_url_image: true,
                 public_url_image: true,
                 payment_proof: true,
@@ -156,6 +163,7 @@ export class BookingModel {
                 user: true,
                 vehicle: true,
                 delivery: true,
+                bank: true,
             },
             skip,
             take: itemsPerPage,
