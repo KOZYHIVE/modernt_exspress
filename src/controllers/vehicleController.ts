@@ -198,6 +198,7 @@ class VehicleController {
             res.status(500).json({ error: "Failed to retrieve vehicles" });
         }
     }
+
     static async searchVehicles(req: Request, res: Response) {
         try {
             const { query, vehicle_type, brand_id, availability_status, page = 1, pagesize = 10 } = req.query;
@@ -211,9 +212,6 @@ class VehicleController {
                 cleanQuery = undefined;
             }
 
-            console.log("Request Query:", req.query);
-            console.log("Cleaned Query:", cleanQuery);
-
             const vehicles = await VehicleModel.search({
                 query: cleanQuery,
                 vehicle_type: vehicle_type as VehicleType,
@@ -222,8 +220,6 @@ class VehicleController {
                 itemsPerPage: Number(pagesize),
                 skip,
             });
-
-            console.log("Response Data:", vehicles);
 
             res.status(200).json({
                 statusCode: 200,
@@ -235,7 +231,6 @@ class VehicleController {
                 },
             });
         } catch (error) {
-            console.error("Error searching vehicles:", error);
             res.status(500).json({ error: "Failed to search vehicles" });
         }
     }
