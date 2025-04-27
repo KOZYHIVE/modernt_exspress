@@ -2,26 +2,39 @@
 
 import { Request, Response } from "express";
 import { BrandModel } from "../models/brandModel";
-import fs from "fs";
-import path from "path";
+import { uploadFile } from "../utils/upload_file";
 
 class BrandController {
     // Fungsi untuk membuat brand baru
     static async createBrand(req: Request, res: Response) {
         try {
             const { brand_name } = req.body;
-            const image = req.file; // File yang di-upload
+            const image = req.file;
+            let uploadResult;
+
+            if (image && image.buffer) {
+                uploadResult = await uploadFile({
+                    fileBuffer: image.buffer,
+                    filename: image.filename,
+                    mimeType: image.mimetype,
+                });
+            }
+
+            if (!uploadResult) {
+                return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
+            }
 
             if (!brand_name) {
                 return res.status(400).json({ error: "Brand name is required" });
             }
 
-            // Simpan path gambar jika ada
-            const local_image_path = image ? `images/${image.filename}` : undefined;
+            const newBrand = await BrandModel.create({
+                brand_name,
+                public_url_image: uploadResult.url,
+                secure_url_image: uploadResult.secure_url,
+            });
 
-            const newBrand = await BrandModel.create({ brand_name, local_image_path });
-
-            res.status(201).json({ message: "Brand created successfully", data: newBrand });
+            res.status(201).json({ statusCode: 201, message: "Brand created successfully", data: newBrand });
         } catch (error) {
             console.error("Error creating brand:", error);
             res.status(500).json({ error: "Failed to create brand" });
@@ -42,7 +55,7 @@ class BrandController {
                 return res.status(404).json({ error: "Brand not found" });
             }
 
-            res.status(200).json({ message: "Brand retrieved successfully", data: brand });
+            res.status(200).json({ statusCode: 200, message: "Brand retrieved successfully", data: brand });
         } catch (error) {
             console.error("Error retrieving brand:", error);
             res.status(500).json({ error: "Failed to retrieve brand" });
@@ -53,15 +66,33 @@ class BrandController {
     static async updateBrand(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { brand_name, local_image_path } = req.body;
+            const { brand_name } = req.body;
+            const image = req.file; // File yang di-upload
+            let uploadResult;
+
+            if (image && image.buffer) {
+                uploadResult = await uploadFile({
+                    fileBuffer: image.buffer,
+                    filename: image.filename,
+                    mimeType: image.mimetype,
+                });
+            }
+
+            if (!uploadResult) {
+                return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
+            }
 
             if (!id) {
                 return res.status(400).json({ error: "Brand ID is required" });
             }
 
-            const updatedBrand = await BrandModel.update(Number(id), { brand_name, local_image_path });
+            const updatedBrand = await BrandModel.update(Number(id), {
+                brand_name,
+                public_url_image: uploadResult.url,
+                secure_url_image: uploadResult.secure_url,
+            });
 
-            res.status(200).json({ message: "Brand updated successfully", data: updatedBrand });
+            res.status(200).json({ statusCode: 200, message: "Brand updated successfully", data: updatedBrand });
         } catch (error) {
             console.error("Error updating brand:", error);
             res.status(500).json({ error: "Failed to update brand" });
@@ -78,7 +109,7 @@ class BrandController {
             }
 
             await BrandModel.delete(Number(id));
-            res.status(200).json({ message: "Brand deleted successfully" });
+            res.status(200).json({ statusCode: 200, message: "Brand deleted successfully" });
         } catch (error) {
             console.error("Error deleting brand:", error);
             res.status(500).json({ error: "Failed to delete brand" });
@@ -93,8 +124,9 @@ class BrandController {
             const skip = (Number(page) - 1) * Number(pagesize);
             const take = Number(pagesize);
 
-            const brands = await BrandModel.getAll({ itemsPerPage: take, skip });
+            const brands = await BrandModel.getAll();
             res.status(200).json({
+                statusCode: 200,
                 message: "Brands retrieved successfully",
                 data: brands,
                 pagination: {

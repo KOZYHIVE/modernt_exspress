@@ -3,9 +3,7 @@
 import express from "express";
 import BannerController from "../controllers/bannerController";
 import { authMiddleware } from "../middlewares/authMiddleware";
-import multer from "multer";
-import {upload} from "../middlewares/upload";
-
+import { upload } from "../middlewares/upload";
 
 const router = express.Router();
 
@@ -18,7 +16,13 @@ router.get("/", authMiddleware, BannerController.getBanners);
 // Mendapatkan detail banner berdasarkan ID
 router.get("/:id", authMiddleware, BannerController.getBannerById);
 
-// Memperbarui banner berdasarkan ID (dengan autentikasi)
+// Mendapatkan semua banner berdasarkan user_id
+router.get("/user/:user_id", authMiddleware, BannerController.getBannersByUserId);
+
+// Mendapatkan semua banner berdasarkan vehicle_id
+router.get("/vehicle/:vehicle_id", authMiddleware, BannerController.getBannersByVehicleId);
+
+// Memperbarui banner berdasarkan ID (dengan autentikasi dan upload gambar)
 router.put("/:id", authMiddleware, upload.single("image"), BannerController.updateBanner);
 
 // Menghapus banner berdasarkan ID (dengan autentikasi)

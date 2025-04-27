@@ -1,34 +1,31 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "mysql" // Sesuaikan dengan database Anda
   url      = env("DATABASE_URL")
 }
 
 model User {
-  id                 Int            @id @default(autoincrement())
-  username           String         @unique
-  email              String         @unique
-  password           String
-  url_profile        String?
-  secure_url_profile String?
-  public_url_profile String?
-  role               Role           @default(user)
-  status             UserStatus     @default(active)
-  otp                Int?
-  created_at         DateTime       @default(now())
-  updated_at         DateTime       @updatedAt
-  detail_user        DetailUser?
-  logs               Log[]
-  refresh_token      RefreshToken[]
-  banner             Banner[]
-  rental             Rental[]
-  transaction        Transaction[]
+  id                   Int           @id @default(autoincrement())
+  username             String        @unique
+  email                String        @unique
+  password             String
+  phone                String?
+  secure_url_profile   String?
+  public_url_profile   String?
+  role                 Role          @default(user)
+  status               Status        @default(active)
+  otp                  String?
+  created_at           DateTime      @default(now())
+  updated_at           DateTime      @updatedAt
+  Address              Address[]
+  logs                 Logs[]
+  RefreshToken         RefreshToken[]
+  Booking              Booking[]
+  Banner               Banner[]
+  BankTransfer         BankTransfer[]
 }
 
 enum Role {
@@ -36,37 +33,106 @@ enum Role {
   admin
 }
 
-enum UserStatus {
+enum Status {
   active
   pending
   suspend
 }
 
-model DetailUser {
-  id         Int      @id @default(autoincrement())
-  user_id    Int      @unique
-  full_name  String
-  address    String
-  phone      String
-  gender     Gender
-  dob        DateTime
-  created_at DateTime @default(now())
-  updated_at DateTime @updatedAt
-  user       User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+model Address {
+  id             Int      @id @default(autoincrement())
+  user_id        Int
+  full_name      String
+  address        String
+  phone          String?
+  url_maps       String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
+  user           User     @relation(fields: [user_id], references: [id])
+  booking         Booking[]
 }
 
-enum Gender {
-  male
-  female
-}
-
-model Log {
-  id          Int    @id @default(autoincrement())
+model Logs {
+  id          Int      @id @default(autoincrement())
   user_id     Int
   action      Action
   description String
   created_at  BigInt
-  user        User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [user_id], references: [id])
+}
+
+model RefreshToken {
+  id            Int      @id @default(autoincrement())
+  user_id       Int
+  refresh_token String
+  created_at    DateTime @default(now())
+  updated_at    DateTime @updatedAt
+  user          User     @relation(fields: [user_id], references: [id])
+}
+
+model Booking {
+  id                Int          @id @default(autoincrement())
+  user_id           Int
+  vehicle_id        Int
+  rental_period     Int
+  start_date        DateTime
+  end_date          DateTime
+  delivery_location Int
+  rental_status     RentalStatus @default(pending)
+  total_price       Int
+  secure_url_image  String?
+  public_url_image  String?
+  payment_proof   PaymentStatus @default(pending)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+  user              User          @relation(fields: [user_id], references: [id])
+  vehicle           Vehicle       @relation(fields: [vehicle_id], references: [id])
+  delivery          Address       @relation(fields: [delivery_location], references: [id])
+}
+
+model Vehicle {
+  id                Int           @id @default(autoincrement())
+  brand_id          Int
+  vehicle_type      VehicleType
+  vehicle_name      String
+  rental_price      Int
+  availability_status Availability @default(available)
+  year              DateTime
+  seats             Int
+  horse_power       Int
+  description       String
+  specification_list String
+  secure_url_image  String?
+  public_url_image  String?
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+  brand             Brand         @relation(fields: [brand_id], references: [id])
+  Booking           Booking[]
+  Banner            Banner[]
+}
+
+model Brand {
+  id               Int      @id @default(autoincrement())
+  brand_name       String
+  public_url_image String?
+  secure_url_image String?
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+  Vehicle          Vehicle[]
+}
+
+model Banner {
+  id                Int      @id @default(autoincrement())
+  user_id           Int
+  vehicle_id        Int
+  title             String
+  description       String
+  secure_url_image  String?
+  public_url_image  String?
+  created_at        DateTime @default(now())
+  updated_at        DateTime @updatedAt
+  user              User     @relation(fields: [user_id], references: [id])
+  vehicle           Vehicle  @relation(fields: [vehicle_id], references: [id])
 }
 
 enum Action {
@@ -80,99 +146,10 @@ enum Action {
   canceled_booking
 }
 
-model RefreshToken {
-  id            Int      @id @default(autoincrement())
-  user_id       Int
-  refresh_token String?  @db.VarChar(1024)
-  created_at    DateTime @default(now())
-  updated_at    DateTime @updatedAt
-  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
-}
-
-model Vehicle {
-  id                     Int                    @id @default(autoincrement())
-  brand_id               Int
-  vehicle_type           VehicleType
-  vehicle_name           String
-  rental_price           Int
-  availability_status    AvailabilityStatus     @default(available)
-  year                   DateTime
-  seats                  Int
-  horse_power            Int
-  description            String
-  specification_list     String
-  local_image_path       String?
-  created_at             DateTime               @default(now())
-  updated_at             DateTime               @updatedAt
-  brand                  Brand                  @relation(fields: [brand_id], references: [id], onDelete: Cascade)
-  vehicle_specifications VehicleSpecification[]
-  rental                 Rental[]
-}
-
-enum VehicleType {
-  motorcycle
-  car
-}
-
-enum AvailabilityStatus {
-  available
-  rented
-  inactive
-}
-
-model Brand {
-  id               Int       @id @default(autoincrement())
-  brand_name       String
-  local_image_path String? // Path file lokal untuk gambar
-  created_at       DateTime  @default(now())
-  updated_at       DateTime  @updatedAt
-  vehicles         Vehicle[]
-}
-
-model VehicleSpecification {
-  id                 Int      @id @default(autoincrement())
-  vehicle_id         Int
-  specification String
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
-  vehicle            Vehicle  @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
-}
-
-model Rental {
-  id                Int           @id @default(autoincrement())
-  vehicle_id        Int
-  start_date        DateTime
-  end_date          DateTime
-  delivery_location String
-  rental_status     RentalStatus
-  total_price       Int
-  created_at        DateTime      @default(now())
-  updated_at        DateTime      @updatedAt
-  vehicle           Vehicle       @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
-  transaction       Transaction[]
-
-  User User[]
-}
-
 enum RentalStatus {
+  active
+  cancelled
   pending
-  confirmed
-  canceled
-}
-
-model Transaction {
-  id               Int        @id @default(autoincrement())
-  user_id          Int
-  rental_id        Int
-  payment_status   PaymentStatus
-  transaction_date DateTime
-  payment_method   PaymentMethod
-  total_amount     Int
-  local_image_path       String?
-  created_at       DateTime      @default(now())
-  updated_at       DateTime      @updatedAt
-  user             User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
-  rental           Rental        @relation(fields: [rental_id], references: [id], onDelete: Cascade)
 }
 
 enum PaymentStatus {
@@ -181,18 +158,23 @@ enum PaymentStatus {
   pending
 }
 
-enum PaymentMethod {
-  credit_card
-  debit_card
-  bank_transfer
+enum VehicleType {
+  motorcycle
+  car
 }
 
-model Banner {
-  id                 Int      @id @default(autoincrement())
-  user_id            Int
-  description        String
-  local_image_path   String?
-  created_at         DateTime @default(now())
-  updated_at         DateTime @updatedAt
+enum Availability {
+  available
+  rented
+  inactive
+}
+
+model BankTransfer {
+  id Int @id @default(autoincrement())
+  user_id Int
+  name_bank String
+  number String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }

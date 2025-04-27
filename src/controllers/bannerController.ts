@@ -2,32 +2,44 @@
 
 import { Request, Response } from "express";
 import { BannerModel } from "../models/bannerModel";
-
+import {uploadFile} from "../utils/upload_file";
 
 class BannerController {
-    // Fungsi untuk membuat banner baru dengan upload gambar
+    // Fungsi untuk membuat banner baru
     static async createBanner(req: Request, res: Response) {
         try {
-            // Ambil user_id dari middleware (JWT)
-            const user_id = req.user?.userId;
+            const {
+                user_id,
+                vehicle_id,
+                title,
+                description,
+            } = req.body;
 
-            if (!user_id) {
-                return res.status(401).json({ error: "Unauthorized: User ID not found in token" });
-            }
-            const { description } = req.body;
-            const image = req.file; // File yang di-upload
-
-            if (!user_id || !description ) {
-                return res.status(400).json({ error: "User ID and description are required" });
+            if (!user_id || !vehicle_id || !title || !description) {
+                return res.status(400).json({ error: "User ID, vehicle ID, title, and description are required" });
             }
 
-            // Simpan path gambar jika ada
-            const local_image_path = image ? `images/${image.filename}` : undefined;
+            const image = req.file;
+            let uploadResult;
+            if (image && image.buffer) {
+                uploadResult = await uploadFile({
+                    fileBuffer: image.buffer,
+                    filename: image.filename,
+                    mimeType: image.mimetype,
+                });
+            }
+
+            if(!uploadResult) {
+                return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
+            }
 
             const newBanner = await BannerModel.create({
-                user_id: Number(user_id),
+                user_id,
+                vehicle_id,
+                title,
                 description,
-                local_image_path,
+                secure_url_image: uploadResult.secure_url,
+                public_url_image: uploadResult.url,
             });
 
             res.status(201).json({ message: "Banner created successfully", data: newBanner });
@@ -58,26 +70,87 @@ class BannerController {
         }
     }
 
+    // Fungsi untuk mendapatkan banner berdasarkan user_id
+    static async getBannersByUserId(req: Request, res: Response) {
+        try {
+            const { user_id } = req.params;
+
+            if (!user_id) {
+                return res.status(400).json({ error: "User ID is required" });
+            }
+
+            const banners = await BannerModel.getByUserId(Number(user_id));
+            if (banners.length === 0) {
+                return res.status(404).json({ error: "No banners found for this user" });
+            }
+
+            res.status(200).json({ message: "Banners retrieved successfully", data: banners });
+        } catch (error) {
+            console.error("Error retrieving banners:", error);
+            res.status(500).json({ error: "Failed to retrieve banners" });
+        }
+    }
+
+    // Fungsi untuk mendapatkan banner berdasarkan vehicle_id
+    static async getBannersByVehicleId(req: Request, res: Response) {
+        try {
+            const { vehicle_id } = req.params;
+
+            if (!vehicle_id) {
+                return res.status(400).json({ error: "Vehicle ID is required" });
+            }
+
+            const banners = await BannerModel.getByVehicleId(Number(vehicle_id));
+            if (banners.length === 0) {
+                return res.status(404).json({ error: "No banners found for this vehicle" });
+            }
+
+            res.status(200).json({ message: "Banners retrieved successfully", data: banners });
+        } catch (error) {
+            console.error("Error retrieving banners:", error);
+            res.status(500).json({ error: "Failed to retrieve banners" });
+        }
+    }
+
     // Fungsi untuk memperbarui banner berdasarkan ID
     static async updateBanner(req: Request, res: Response) {
         try {
             const { id } = req.params;
-            const { description } = req.body;
-            const image = req.file; // File yang di-upload
+            const {
+                user_id,
+                vehicle_id,
+                title,
+                description
+            } = req.body;
 
             if (!id) {
                 return res.status(400).json({ error: "Banner ID is required" });
             }
 
-            // Simpan path gambar jika ada perubahan
-            const local_image_path = image ? `images/${image.filename}` : undefined;
+            const image = req.file;
+            let uploadResult;
+            if (image && image.buffer) {
+                uploadResult = await uploadFile({
+                    fileBuffer: image.buffer,
+                    filename: image.filename,
+                    mimeType: image.mimetype,
+                });
+            }
+
+            if(!uploadResult) {
+                return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
+            }
 
             const updatedBanner = await BannerModel.update(Number(id), {
+                user_id,
+                vehicle_id,
+                title,
                 description,
-                local_image_path,
+                secure_url_image: uploadResult.secure_url,
+                public_url_image: uploadResult.url,
             });
 
-            res.status(200).json({ message: "Banner updated successfully", data: updatedBanner });
+            res.status(200).json({ statusCode: 200, message: "Banner updated successfully", data: updatedBanner });
         } catch (error) {
             console.error("Error updating banner:", error);
             res.status(500).json({ error: "Failed to update banner" });
@@ -94,7 +167,7 @@ class BannerController {
             }
 
             await BannerModel.delete(Number(id));
-            res.status(200).json({ message: "Banner deleted successfully" });
+            res.status(200).json({ statusCode: 200, message: "Banner deleted successfully" });
         } catch (error) {
             console.error("Error deleting banner:", error);
             res.status(500).json({ error: "Failed to delete banner" });

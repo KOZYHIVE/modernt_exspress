@@ -1,6 +1,4 @@
-// src/models/refreshToken.ts
-
-import { prisma } from "../config/prisma";
+import prisma from '../config/prisma';
 
 class RefreshTokenModel {
     static create(userId: number, refreshToken: string) {
