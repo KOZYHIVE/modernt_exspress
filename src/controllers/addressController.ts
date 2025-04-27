@@ -14,7 +14,7 @@ class AddressController {
                 return res.status(401).json({ error: "Unauthorized: User ID not found in token" });
             }
 
-            const { full_name, address, phone, url_maps } = req.body;
+            const { full_name, address, phone, full_address, latitude, longitude } = req.body;
 
             if (!user_id || !full_name || !address) {
                 return res.status(400).json({ statusCode: 400, error: "User ID, full name, and address are required" });
@@ -25,7 +25,9 @@ class AddressController {
                 full_name,
                 address,
                 phone,
-                url_maps,
+                full_address,
+                latitude,
+                longitude
             });
 
             res.status(201).json({ statusCode: 201, message: "Address created successfully", data: newAddress });
@@ -87,7 +89,7 @@ class AddressController {
             if (!user_id) {
                 return res.status(401).json({ statusCode: 401, error: "Unauthorized: User ID not found in token" });
             }
-            const { full_name, address, phone, url_maps } = req.body;
+            const { full_name, address, phone, full_address, latitude, longitude } = req.body;
 
             if (!id) {
                 return res.status(400).json({ error: "Address ID is required" });
@@ -98,7 +100,9 @@ class AddressController {
                 full_name,
                 address,
                 phone,
-                url_maps,
+                full_address,
+                latitude,
+                longitude
             });
 
             res.status(200).json({ statusCode: 200, message: "Address updated successfully", data: updatedAddress });

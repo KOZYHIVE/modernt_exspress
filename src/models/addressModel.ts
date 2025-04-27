@@ -7,9 +7,11 @@ export class AddressModel {
     static async create(data: {
         user_id: number;
         full_name: string;
-        address: string;
+        address?: string;
         phone?: string;
-        url_maps?: string;
+        full_address?: string;
+        latitude?: string;
+        longitude?: string;
     }) {
         return prisma.address.create({ data });
     }
@@ -52,7 +54,9 @@ export class AddressModel {
         full_name?: string;
         address?: string;
         phone?: string;
-        url_maps?: string;
+        full_address?: string;
+        latitude?: string;
+        longitude?: string;
     }) {
         const existingAddress = await prisma.address.findUnique({ where: { id } });
 
@@ -80,7 +84,9 @@ export class AddressModel {
                 full_name: true,
                 address: true,
                 phone: true,
-                url_maps: true,
+                full_address:true,
+                latitude:true,
+                longitude:true,
                 created_at: true,
                 updated_at: true,
             },
