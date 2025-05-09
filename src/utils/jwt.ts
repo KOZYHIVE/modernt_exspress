@@ -8,7 +8,7 @@ export const generateRefreshToken = (payload: any): string => {
         throw new Error('JWT_REFRESH_TOKEN is not defined in environment variables');
     }
     return jwt.sign(payload, refreshTokenSecret, {
-        expiresIn: '4h',
+        expiresIn: '7d',
     });
 };
 
@@ -18,7 +18,7 @@ export const generateAccessToken = (payload: { userId: number; email: string }) 
     if (!accessTokenSecret) {
         throw new Error("JWT_ACCESS_TOKEN is not defined in environment variables");
     }
-    return jwt.sign(payload, accessTokenSecret, { expiresIn: "10m" });
+    return jwt.sign(payload, accessTokenSecret, { expiresIn: "7d" });
 };
 
 // Generate both Refresh and Access Tokens

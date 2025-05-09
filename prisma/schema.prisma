@@ -51,7 +51,7 @@ model Address {
   longitude      String?
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
-  user           User     @relation(fields: [user_id], references: [id])
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
   booking        Booking[]
 }
 
@@ -61,7 +61,7 @@ model Logs {
   action      Action
   description String
   created_at  BigInt
-  user        User     @relation(fields: [user_id], references: [id])
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model RefreshToken {
@@ -70,7 +70,7 @@ model RefreshToken {
   refresh_token String
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
-  user          User     @relation(fields: [user_id], references: [id])
+  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Booking {
@@ -90,10 +90,10 @@ model Booking {
   notes             String?
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
-  user              User          @relation(fields: [user_id], references: [id])
-  vehicle           Vehicle       @relation(fields: [vehicle_id], references: [id])
-  delivery          Address       @relation(fields: [delivery_location], references: [id])
-  bank              BankTransfer @relation(fields: [bank_transfer], references: [id])
+  user              User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  vehicle           Vehicle       @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
+  delivery          Address       @relation(fields: [delivery_location], references: [id], onDelete: Cascade)
+  bank              BankTransfer @relation(fields: [bank_transfer], references: [id], onDelete: Cascade)
 }
 
 model Vehicle {
@@ -112,7 +112,7 @@ model Vehicle {
   public_url_image  String?
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
-  brand             Brand         @relation(fields: [brand_id], references: [id])
+  brand             Brand         @relation(fields: [brand_id], references: [id], onDelete: Cascade)
   Booking           Booking[]
   Banner            Banner[]
 }
@@ -137,8 +137,8 @@ model Banner {
   public_url_image  String?
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
-  user              User     @relation(fields: [user_id], references: [id])
-  vehicle           Vehicle  @relation(fields: [vehicle_id], references: [id])
+  user              User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  vehicle           Vehicle  @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
 }
 
 enum Action {
