@@ -8,14 +8,19 @@ class BannerController {
     // Fungsi untuk membuat banner baru
     static async createBanner(req: Request, res: Response) {
         try {
+            // Ambil user_id dari middleware (JWT)
+            const user_id = req.user?.userId;
+
+            if (!user_id) {
+                return res.status(401).json({ error: "Unauthorized: User ID not found in token" });
+            }
             const {
-                user_id,
                 vehicle_id,
                 title,
                 description,
             } = req.body;
 
-            if (!user_id || !vehicle_id || !title || !description) {
+            if ( !vehicle_id || !title || !description) {
                 return res.status(400).json({ error: "User ID, vehicle ID, title, and description are required" });
             }
 
@@ -35,7 +40,7 @@ class BannerController {
 
             const newBanner = await BannerModel.create({
                 user_id,
-                vehicle_id,
+                vehicle_id: Number(vehicle_id),
                 title,
                 description,
                 secure_url_image: uploadResult.secure_url,
