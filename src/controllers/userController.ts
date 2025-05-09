@@ -3,51 +3,9 @@
 import { Request, Response } from "express";
 import { UserModel } from "../models/userModel";
 import { uploadFile } from "../utils/upload_file";
+import bcrypt from "bcrypt";
 
 class UserController {
-  // Fungsi untuk membuat pengguna baru
-  static async createUser(req: Request, res: Response) {
-    try {
-      const { username, email, password, phone, role, status, otp } = req.body;
-
-      if (!username || !email || !password || !otp) {
-        return res.status(400).json({ error: "Username, email, password, and OTP are required" });
-      }
-
-      const image = req.file;
-      let uploadResult;
-      if (image && image.buffer) {
-        uploadResult = await uploadFile({
-          fileBuffer: image.buffer,
-          filename: image.filename,
-          mimeType: image.mimetype,
-        });
-      }
-
-      if(!uploadResult) {
-        return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
-      }
-
-
-      const newUser = await UserModel.create({
-        username,
-        email,
-        password,
-        phone,
-        secure_url_profile: uploadResult.secure_url,
-        public_url_profile: uploadResult.url,
-        role,
-        status,
-        otp,
-      });
-
-      res.status(201).json({ statusCode: 201, message: "User created successfully", data: newUser });
-    } catch (error) {
-      console.error("Error creating user:", error);
-      res.status(500).json({ error: "Failed to create user" });
-    }
-  }
-
   // Fungsi untuk mendapatkan pengguna berdasarkan ID
   static async getUserById(req: Request, res: Response) {
     try {
@@ -55,6 +13,28 @@ class UserController {
 
       if (!id) {
         return res.status(400).json({ error: "User ID is required" });
+      }
+
+      const user = await UserModel.getById(Number(id));
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      res.status(200).json({ statusCode: 200, message: "User retrieved successfully", data: user });
+    } catch (error) {
+      console.error("Error retrieving user:", error);
+      res.status(500).json({ error: "Failed to retrieve user" });
+    }
+  }
+
+  // Fungsi untuk mendapatkan pengguna berdasarkan ID
+  static async getUserByAccess(req: Request, res: Response) {
+    try {
+      // Ambil user_id dari middleware (JWT)
+      const id = req.user?.userId;
+
+      if (!id) {
+        return res.status(401).json({ error: "Unauthorized: User ID not found in token" });
       }
 
       const user = await UserModel.getById(Number(id));
@@ -113,13 +93,49 @@ class UserController {
   // Fungsi untuk memperbarui pengguna berdasarkan ID
   static async updateUser(req: Request, res: Response) {
     try {
-      const { id } = req.params;
-      const { username, email, password, phone, role, status, otp } = req.body;
+      // Ambil user_id dari middleware (JWT)
+      const id = req.user?.userId;
+
+      if (!id) {
+        return res.status(401).json({ error: "Unauthorized: User ID not found in token" });
+      }
+      const {
+        username,
+        full_name,
+        email,
+        current_password, // Password lama
+        new_password,     // Password baru
+        phone,
+        status,
+        otp,
+      } = req.body;
 
       if (!id) {
         return res.status(400).json({ error: "User ID is required" });
       }
 
+      // Ambil data pengguna dari database berdasarkan ID
+      const user = await UserModel.getById(Number(id));
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Validasi password lama jika ada permintaan untuk mengubah password
+      if (current_password && new_password) {
+        const isPasswordValid = await bcrypt.compare(current_password, user.password);
+        if (!isPasswordValid) {
+          return res.status(400).json({ error: "Current password is incorrect" });
+        }
+
+        // Hash password baru
+        const hashedPassword = await bcrypt.hash(new_password, 10); // Salt rounds = 10
+        req.body.password = hashedPassword; // Ganti password baru dengan versi ter-hash
+      } else if (new_password && !current_password) {
+        // Jika hanya password baru tanpa password lama, kembalikan error
+        return res.status(400).json({ error: "Current password is required to update the password" });
+      }
+
+      // Handle upload gambar profil jika ada
       const image = req.file;
       let uploadResult;
       if (image && image.buffer) {
@@ -130,19 +146,19 @@ class UserController {
         });
       }
 
-      if(!uploadResult) {
+      if (!uploadResult && image) {
         return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
       }
 
-
+      // Perbarui data pengguna di database
       const updatedUser = await UserModel.update(Number(id), {
         username,
+        full_name,
         email,
-        password,
+        password: req.body.password || user.password, // Gunakan password baru jika ada
         phone,
-        secure_url_profile: uploadResult.secure_url,
-        public_url_profile: uploadResult.url,
-        role,
+        secure_url_profile: uploadResult?.secure_url,
+        public_url_profile: uploadResult?.url,
         status,
         otp,
       });

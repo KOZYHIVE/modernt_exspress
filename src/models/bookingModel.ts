@@ -1,10 +1,28 @@
 // models/BookingModel.ts
 
 import prisma from '../config/prisma';
-import { PaymentStatus, RentalStatus } from '@prisma/client';
+import {BankTransfer, PaymentStatus, RentalStatus} from '@prisma/client';
 
 export class BookingModel {
     // Fungsi untuk membuat booking baru
+    // static async create(data: {
+    //     user_id: number;
+    //     vehicle_id: number;
+    //     rental_period: number;
+    //     start_date: Date;
+    //     end_date: Date;
+    //     delivery_location: number;
+    //     rental_status?: RentalStatus;
+    //     notes?: string;
+    //     bank_transfer: number;
+    //     total_price: number;
+    //     secure_url_image?: string;
+    //     public_url_image?: string;
+    //     payment_proof?: PaymentStatus;
+    // }) {
+    //     return prisma.booking.create({ data });
+    // }
+
     static async create(data: {
         user_id: number;
         vehicle_id: number;
@@ -13,12 +31,40 @@ export class BookingModel {
         end_date: Date;
         delivery_location: number;
         rental_status?: RentalStatus;
+        notes?: string;
+        bank_transfer: number; // Pastikan ini adalah foreign key ke BankTransfer
         total_price: number;
         secure_url_image?: string;
         public_url_image?: string;
         payment_proof?: PaymentStatus;
     }) {
-        return prisma.booking.create({ data });
+        // Membuat booking baru di database
+        const booking = await prisma.booking.create({
+            data,
+            include: {
+                vehicle: { // Memuat nama kendaraan
+                    select: {
+                        vehicle_name: true,
+                    },
+                },
+                bank: { // Memuat informasi bank
+                    select: {
+                        name_bank: true,
+                        number: true,
+                    },
+                },
+            },
+        });
+
+        // Mengembalikan data yang diminta dalam format yang sesuai
+        return {
+            vehicle_name: booking.vehicle?.vehicle_name || 'Unknown Vehicle',
+            date_range: `${booking.start_date.toISOString().split('T')[0]} - ${booking.end_date.toISOString().split('T')[0]}`,
+            rental_period: booking.rental_period,
+            total_price: booking.total_price,
+            name_bank: booking.bank?.name_bank || 'Unknown Bank',
+            number: booking.bank?.number || 'Unknown Number',
+        };
     }
 
     // Fungsi untuk mendapatkan booking berdasarkan ID
@@ -41,6 +87,7 @@ export class BookingModel {
                 user: true,
                 vehicle: true,
                 delivery: true,
+                bank: true,
             },
         });
     }
@@ -53,6 +100,7 @@ export class BookingModel {
                 user: true,
                 vehicle: true,
                 delivery: true,
+                bank: true,
             },
         });
     }
@@ -65,6 +113,7 @@ export class BookingModel {
                 user: true,
                 vehicle: true,
                 delivery: true,
+                bank: true,
             },
         }).then((booking) => {
             if (!booking || booking.user_id !== user_id) {
@@ -101,6 +150,7 @@ export class BookingModel {
         delivery_location?: number;
         rental_status?: RentalStatus;
         total_price?: number;
+        bank_transfer?: number;
         secure_url_image?: string;
         public_url_image?: string;
         payment_proof?: PaymentStatus;
@@ -135,6 +185,7 @@ export class BookingModel {
                 delivery_location: true,
                 rental_status: true,
                 total_price: true,
+                bank_transfer: true,
                 secure_url_image: true,
                 public_url_image: true,
                 payment_proof: true,
@@ -143,6 +194,23 @@ export class BookingModel {
             },
             skip: payload.skip,
             take: payload.itemsPerPage,
+        });
+    }
+
+    // Fungsi untuk mendapatkan daftar booking berdasarkan user_id dengan paginasi
+    static async getAllByUser(payload: { user_id: number; itemsPerPage: number; skip: number }) {
+        const { user_id, itemsPerPage, skip } = payload;
+
+        return prisma.booking.findMany({
+            where: { user_id },
+            include: {
+                user: true,
+                vehicle: true,
+                delivery: true,
+                bank: true,
+            },
+            skip,
+            take: itemsPerPage,
         });
     }
 }

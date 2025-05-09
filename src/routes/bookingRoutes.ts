@@ -12,6 +12,12 @@ router.post("/create", authMiddleware, BookingController.createBooking);
 // Get a booking by ID
 router.get("user/:id", authMiddleware, BookingController.getBookingById);
 
+// Get a booking by ID
+router.get("/user/history", authMiddleware, BookingController.getAllByUser);
+
+// Get a booking by ID
+router.get("/user/history/:id", authMiddleware, BookingController.getBookingByIdRoleUser);
+
 // Get bookings by user ID
 router.get("/user/:user_id", authMiddleware, BookingController.getBookingsByUserId);
 

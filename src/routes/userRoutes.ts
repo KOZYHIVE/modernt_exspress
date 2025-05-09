@@ -7,11 +7,8 @@ import { upload } from "../middlewares/upload";
 
 const router = express.Router();
 
-// Membuat pengguna baru (dengan autentikasi dan upload gambar)
-router.post("/", authMiddleware, upload.single("image"), UserController.createUser);
-
 // Mendapatkan semua pengguna dengan paginasi
-router.get("/", authMiddleware, UserController.getUsers);
+router.get("/all", authMiddleware, UserController.getUsers);
 
 // Mendapatkan detail pengguna berdasarkan ID
 router.get("/:id", authMiddleware, UserController.getUserById);
@@ -23,7 +20,7 @@ router.get("/username/:username", authMiddleware, UserController.getUserByUserna
 router.get("/email/:email", authMiddleware, UserController.getUserByEmail);
 
 // Memperbarui pengguna berdasarkan ID (dengan autentikasi dan upload gambar)
-router.put("/:id", authMiddleware, upload.single("image"), UserController.updateUser);
+router.put("/update", authMiddleware, upload.single("image"), UserController.updateUser);
 
 // Menghapus pengguna berdasarkan ID (dengan autentikasi)
 router.delete("/:id", authMiddleware, UserController.deleteUser);

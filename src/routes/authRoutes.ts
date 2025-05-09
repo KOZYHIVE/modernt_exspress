@@ -1,5 +1,7 @@
 import express from "express";
 import AuthController from "../controllers/authController";
+import UserController from "../controllers/userController";
+import {authMiddleware} from "../middlewares/authMiddleware";
 
 const router = express.Router();
 
@@ -18,7 +20,12 @@ router.post("/forget-password", AuthController.forgetPassword);
 // Route untuk reset password menggunakan OTP
 router.post("/reset-password", AuthController.resetPassword);
 
+router.use(authMiddleware);
+
 // Route untuk logout
 router.post("/logout", AuthController.logout);
+
+// Mendapatkan detail pengguna berdasarkan ID
+router.get("/user", UserController.getUserByAccess);
 
 export default router;

@@ -10,6 +10,7 @@ datasource db {
 model User {
   id                   Int           @id @default(autoincrement())
   username             String        @unique
+  full_name           String?
   email                String        @unique
   password             String
   phone                String?
@@ -43,13 +44,15 @@ model Address {
   id             Int      @id @default(autoincrement())
   user_id        Int
   full_name      String
-  address        String
+  address        String?
   phone          String?
-  url_maps       String?
+  full_address   String?
+  latitude       String?
+  longitude      String?
   created_at     DateTime @default(now())
   updated_at     DateTime @updatedAt
-  user           User     @relation(fields: [user_id], references: [id])
-  booking         Booking[]
+  user           User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  booking        Booking[]
 }
 
 model Logs {
@@ -58,7 +61,7 @@ model Logs {
   action      Action
   description String
   created_at  BigInt
-  user        User     @relation(fields: [user_id], references: [id])
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model RefreshToken {
@@ -67,7 +70,7 @@ model RefreshToken {
   refresh_token String
   created_at    DateTime @default(now())
   updated_at    DateTime @updatedAt
-  user          User     @relation(fields: [user_id], references: [id])
+  user          User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
 }
 
 model Booking {
@@ -83,11 +86,14 @@ model Booking {
   secure_url_image  String?
   public_url_image  String?
   payment_proof   PaymentStatus @default(pending)
+  bank_transfer     Int
+  notes             String?
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
-  user              User          @relation(fields: [user_id], references: [id])
-  vehicle           Vehicle       @relation(fields: [vehicle_id], references: [id])
-  delivery          Address       @relation(fields: [delivery_location], references: [id])
+  user              User          @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  vehicle           Vehicle       @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
+  delivery          Address       @relation(fields: [delivery_location], references: [id], onDelete: Cascade)
+  bank              BankTransfer @relation(fields: [bank_transfer], references: [id], onDelete: Cascade)
 }
 
 model Vehicle {
@@ -106,7 +112,7 @@ model Vehicle {
   public_url_image  String?
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
-  brand             Brand         @relation(fields: [brand_id], references: [id])
+  brand             Brand         @relation(fields: [brand_id], references: [id], onDelete: Cascade)
   Booking           Booking[]
   Banner            Banner[]
 }
@@ -131,8 +137,8 @@ model Banner {
   public_url_image  String?
   created_at        DateTime @default(now())
   updated_at        DateTime @updatedAt
-  user              User     @relation(fields: [user_id], references: [id])
-  vehicle           Vehicle  @relation(fields: [vehicle_id], references: [id])
+  user              User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  vehicle           Vehicle  @relation(fields: [vehicle_id], references: [id], onDelete: Cascade)
 }
 
 enum Action {
@@ -177,4 +183,5 @@ model BankTransfer {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user               User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  booking Booking[]
 }
