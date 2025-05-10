@@ -56,8 +56,8 @@ export class BookingModel {
             },
         });
 
-        // Mengembalikan data yang diminta dalam format yang sesuai
         return {
+            booking: booking.id,
             vehicle_name: booking.vehicle?.vehicle_name || 'Unknown Vehicle',
             date_range: `${booking.start_date.toISOString().split('T')[0]} - ${booking.end_date.toISOString().split('T')[0]}`,
             rental_period: booking.rental_period,
@@ -69,14 +69,98 @@ export class BookingModel {
 
     // Fungsi untuk mendapatkan booking berdasarkan ID
     static async getById(id: number) {
-        return prisma.booking.findUnique({
-            where: { id },
-            include: {
-                user: true,
-                vehicle: true,
-                delivery: true,
-            },
-        });
+        try {
+            // Mengambil data booking berdasarkan ID dengan relasi lengkap
+            const booking = await prisma.booking.findUnique({
+                where: { id },
+                include: {
+                    user: true,
+                    vehicle: true,
+                    delivery: true,
+                    bank: true,
+                },
+            });
+
+            // Jika data booking tidak ditemukan
+            if (!booking) {
+                return {
+                    success: false,
+                    data: null,
+                    message: 'Booking tidak ditemukan',
+                };
+            }
+
+            // Memformat data agar sesuai dengan output yang diinginkan
+            const formattedBooking = {
+                id: booking.id,
+                user_id: booking.user_id,
+                vehicle_id: booking.vehicle_id,
+                rental_period: booking.rental_period,
+                start_date: booking.start_date,
+                end_date: booking.end_date,
+                delivery_location: booking.delivery_location,
+                rental_status: booking.rental_status,
+                total_price: booking.total_price,
+                secure_url_image: booking.secure_url_image,
+                public_url_image: booking.public_url_image,
+                payment_proof: booking.payment_proof,
+                bank_transfer: booking.bank_transfer,
+                notes: booking.notes,
+                created_at: booking.created_at,
+                updated_at: booking.updated_at,
+                user: {
+                    id: booking.user.id,
+                    username: booking.user.username,
+                    full_name: booking.user.full_name,
+                    email: booking.user.email,
+                    role: booking.user.role,
+                    status: booking.user.status,
+                },
+                vehicle: {
+                    vehicle_id: booking.vehicle.id,
+                    brand_id: booking.vehicle.brand_id,
+                    vehicle_type: booking.vehicle.vehicle_type,
+                    vehicle_name: booking.vehicle.vehicle_name,
+                    rental_price: booking.vehicle.rental_price,
+                    availability_status: booking.vehicle.availability_status,
+                    year: booking.vehicle.year,
+                    seats: booking.vehicle.seats,
+                    horse_power: booking.vehicle.horse_power,
+                    description: booking.vehicle.description,
+                    specification_list: booking.vehicle.specification_list,
+                    secure_url_image: booking.vehicle.secure_url_image,
+                    public_url_image: booking.vehicle.public_url_image,
+                },
+                delivery: {
+                    delivery_id: booking.delivery.id,
+                    user_id: booking.delivery.user_id,
+                    full_name: booking.delivery.full_name,
+                    address: booking.delivery.address,
+                    phone: booking.delivery.phone,
+                    full_address: booking.delivery.full_address,
+                    latitude: booking.delivery.latitude,
+                    longitude: booking.delivery.longitude,
+                },
+                bank: {
+                    id: booking.bank.id,
+                    name_bank: booking.bank.name_bank,
+                    number: booking.bank.number,
+                },
+            };
+
+            return {
+                success: true,
+                data: formattedBooking,
+                message: 'Data booking berhasil diambil',
+            };
+        } catch (error) {
+            console.error('Error fetching booking by ID:', error);
+            return {
+                success: false,
+                data: null,
+                message: 'Terjadi kesalahan saat mengambil data booking',
+            };
+        }
     }
 
     // Fungsi untuk mendapatkan booking berdasarkan user_id
@@ -172,45 +256,102 @@ export class BookingModel {
         return prisma.booking.delete({ where: { id } });
     }
 
-    // Fungsi untuk mendapatkan daftar booking dengan paginasi
-    static async getAll(payload: { itemsPerPage: number; skip: number }) {
-        return prisma.booking.findMany({
-            select: {
-                id: true,
-                user_id: true,
-                vehicle_id: true,
-                rental_period: true,
-                start_date: true,
-                end_date: true,
-                delivery_location: true,
-                rental_status: true,
-                total_price: true,
-                bank_transfer: true,
-                secure_url_image: true,
-                public_url_image: true,
-                payment_proof: true,
-                created_at: true,
-                updated_at: true,
-            },
-            skip: payload.skip,
-            take: payload.itemsPerPage,
-        });
+    // Fungsi untuk mendapatkan semua daftar booking dengan paginasi
+    static async getAllBookings(payload: { itemsPerPage: number; skip: number }) {
+        const { itemsPerPage, skip } = payload;
+
+        try {
+            // Mengambil semua data booking dengan relasi yang sesuai
+            const bookings = await prisma.booking.findMany({
+                include: {
+                    vehicle: true,
+                    delivery: true, // Mengambil alamat pengiriman dari Address
+                    bank: true,
+                },
+                skip,
+                take: itemsPerPage,
+            });
+
+            // Memformat data agar sesuai dengan kebutuhan respons JSON
+            const formattedBookings = bookings.map(booking => ({
+                vehicle_id: booking.vehicle.id,
+                rental_period: booking.rental_period,
+                start_date: booking.start_date,
+                end_date: booking.end_date,
+                total_price: booking.total_price,
+                rental_status: booking.rental_status,
+                delivery: {
+                    full_name: booking.delivery?.full_name,
+                    phone: booking.delivery?.phone,
+                    full_address: booking.delivery?.full_address,
+                    latitude: booking.delivery?.latitude,
+                    longitude: booking.delivery?.longitude,
+                },
+            }));
+
+            return {
+                success: true,
+                data: formattedBookings,
+                message: 'Semua data booking berhasil diambil',
+            };
+        } catch (error) {
+            console.error('Error fetching bookings:', error);
+            return {
+                success: false,
+                data: null,
+                message: 'Terjadi kesalahan saat mengambil data booking',
+            };
+        }
     }
 
     // Fungsi untuk mendapatkan daftar booking berdasarkan user_id dengan paginasi
     static async getAllByUser(payload: { user_id: number; itemsPerPage: number; skip: number }) {
         const { user_id, itemsPerPage, skip } = payload;
 
-        return prisma.booking.findMany({
-            where: { user_id },
-            include: {
-                user: true,
-                vehicle: true,
-                delivery: true,
-                bank: true,
-            },
-            skip,
-            take: itemsPerPage,
-        });
+        try {
+            // Mengambil data booking dengan relasi ke Address yang sesuai dengan model Booking
+            const bookings = await prisma.booking.findMany({
+                where: { user_id },
+                include: {
+                    vehicle: true,
+                    delivery: true,
+                    bank: true,
+                },
+                skip,
+                take: itemsPerPage,
+            });
+
+            // Memformat data agar sesuai dengan kebutuhan respons JSON
+            const formattedBookings = bookings.map(booking => ({
+                booking_id: booking.id,
+                vehicle_id: booking.vehicle.id,
+                rental_period: booking.rental_period,
+                start_date: booking.start_date,
+                end_date: booking.end_date,
+                total_price: booking.total_price,
+                rental_status: booking.rental_status,
+                delivery: {
+                    user_id: booking.delivery?.user_id,
+                    full_name: booking.delivery?.full_name,
+                    phone: booking.delivery?.phone,
+                    full_address: booking.delivery?.full_address,
+                    latitude: booking.delivery?.latitude,
+                    longitude: booking.delivery?.longitude,
+                },
+            }));
+
+            return {
+                success: true,
+                data: formattedBookings,
+                message: 'Data booking berhasil diambil',
+            };
+        } catch (error) {
+            console.error('Error fetching bookings:', error);
+            return {
+                success: false,
+                data: null,
+                message: 'Terjadi kesalahan saat mengambil data booking',
+            };
+        }
     }
 }
