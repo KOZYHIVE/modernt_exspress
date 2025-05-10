@@ -325,12 +325,15 @@ export class BookingModel {
             // Memformat data agar sesuai dengan kebutuhan respons JSON
             const formattedBookings = bookings.map(booking => ({
                 booking_id: booking.id,
-                vehicle_id: booking.vehicle.id,
                 rental_period: booking.rental_period,
                 start_date: booking.start_date,
                 end_date: booking.end_date,
                 total_price: booking.total_price,
                 rental_status: booking.rental_status,
+                vehicle: {
+                    vehicle_name: booking.vehicle?.vehicle_name,
+                    vehicle_type: booking.vehicle?.vehicle_type,
+                },
                 delivery: {
                     user_id: booking.delivery?.user_id,
                     full_name: booking.delivery?.full_name,

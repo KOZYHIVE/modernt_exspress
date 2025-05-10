@@ -68,13 +68,13 @@ export const decodeRefreshToken = (token: string): any | false => {
     }
 };
 
-// Send Refresh Token via Cookie
+// Send Refresh Token via Cookie (7 hari)
 export const sendRefreshToken = (res: Response, token: string) => {
     res.cookie('refresh_token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production', // Enable secure cookies in production
         sameSite: 'strict',
-        maxAge: 4 * 60 * 60 * 1000, // 4 hours
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 hari (604800000 ms)
     });
 };
 
