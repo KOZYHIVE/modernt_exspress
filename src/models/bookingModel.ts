@@ -211,6 +211,7 @@ export class BookingModel {
     static async updateByIdRoleUser(id: number, user_id: number, data: {
         secure_url_image?: string;
         public_url_image?: string;
+        payment_proof?: PaymentStatus;
     }) {
         const existingBooking = await prisma.booking.findUnique({ where: { id } });
 
