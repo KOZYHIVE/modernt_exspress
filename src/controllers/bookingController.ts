@@ -268,6 +268,7 @@ class BookingController {
             });
 
             res.status(200).json({
+                statusCode: 200,
                 message: "Bookings retrieved successfully",
                 data: bookings,
                 pagination: {
