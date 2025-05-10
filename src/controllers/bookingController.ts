@@ -223,7 +223,6 @@ class BookingController {
         }
     }
     // Fungsi untuk mendapatkan daftar booking dengan paginasi
-
     static async getBookings(req: Request, res: Response) {
         try {
             const { page = 1, pagesize = 10 } = req.query;
@@ -231,7 +230,7 @@ class BookingController {
             const skip = (Number(page) - 1) * Number(pagesize);
             const take = Number(pagesize);
 
-            const bookings = await BookingModel.getAll({ itemsPerPage: take, skip });
+            const bookings = await BookingModel.getAllBookings({ itemsPerPage: take, skip });
             res.status(200).json({
                 statusCode: 200,
                 message: "Bookings retrieved successfully",
