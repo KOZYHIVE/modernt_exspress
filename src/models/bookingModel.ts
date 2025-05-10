@@ -57,7 +57,7 @@ export class BookingModel {
         });
 
         return {
-            booking: booking.id,
+            booking_id: booking.id,
             vehicle_name: booking.vehicle?.vehicle_name || 'Unknown Vehicle',
             date_range: `${booking.start_date.toISOString().split('T')[0]} - ${booking.end_date.toISOString().split('T')[0]}`,
             rental_period: booking.rental_period,
@@ -92,7 +92,7 @@ export class BookingModel {
 
             // Memformat data agar sesuai dengan output yang diinginkan
             const formattedBooking = {
-                id: booking.id,
+                booking_id: booking.id,
                 user_id: booking.user_id,
                 vehicle_id: booking.vehicle_id,
                 rental_period: booking.rental_period,
@@ -274,6 +274,7 @@ export class BookingModel {
 
             // Memformat data agar sesuai dengan kebutuhan respons JSON
             const formattedBookings = bookings.map(booking => ({
+                booking_id: booking.id,
                 vehicle_id: booking.vehicle.id,
                 rental_period: booking.rental_period,
                 start_date: booking.start_date,
