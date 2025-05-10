@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import { BookingModel } from "../models/bookingModel";
 import { VehicleModel } from "../models/vehicleModel";
 import { uploadFile } from "../utils/upload_file";
+import {PaymentStatus} from "@prisma/client";
 
 class BookingController {
     // Fungsi untuk membuat booking baru
@@ -159,6 +160,7 @@ class BookingController {
             const updatedBooking = await BookingModel.updateByIdRoleUser(Number(id), Number(user_id), {
                 secure_url_image: uploadResult.secure_url,
                 public_url_image: uploadResult.url,
+                payment_proof: PaymentStatus.pending
             });
 
             res.status(200).json({ statusCode: 200, message: "Booking updated successfully", data: updatedBooking });

@@ -85,7 +85,7 @@ model Booking {
   total_price       Int
   secure_url_image  String?
   public_url_image  String?
-  payment_proof   PaymentStatus @default(pending)
+  payment_proof   PaymentStatus @default(unpaid)
   bank_transfer     Int
   notes             String?
   created_at        DateTime      @default(now())
