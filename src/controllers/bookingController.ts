@@ -149,11 +149,11 @@ class BookingController {
             }
 
             if(!uploadResult) {
-                return res.status(500).json({ error: "Unauthorized: Image not uploaded" });
+                return res.status(500).json({ statusCode: 200, error: "Unauthorized: Image not uploaded" });
             }
 
             if (!id || !user_id) {
-                return res.status(400).json({ error: "Booking ID and User ID are required" });
+                return res.status(400).json({ statusCode: 400, error: "Booking ID and User ID are required" });
             }
 
             const updatedBooking = await BookingModel.updateByIdRoleUser(Number(id), Number(user_id), {
