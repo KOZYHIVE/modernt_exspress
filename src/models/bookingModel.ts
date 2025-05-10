@@ -281,6 +281,7 @@ export class BookingModel {
                 end_date: booking.end_date,
                 total_price: booking.total_price,
                 rental_status: booking.rental_status,
+                payment_proof: booking.payment_proof,
                 delivery: {
                     full_name: booking.delivery?.full_name,
                     phone: booking.delivery?.phone,
@@ -330,6 +331,7 @@ export class BookingModel {
                 end_date: booking.end_date,
                 total_price: booking.total_price,
                 rental_status: booking.rental_status,
+                payment_proof: booking.payment_proof,
                 vehicle: {
                     vehicle_name: booking.vehicle?.vehicle_name,
                     vehicle_type: booking.vehicle?.vehicle_type,
