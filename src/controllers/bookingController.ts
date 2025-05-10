@@ -161,7 +161,7 @@ class BookingController {
                 public_url_image: uploadResult.url,
             });
 
-            res.status(200).json({ message: "Booking updated successfully", data: updatedBooking });
+            res.status(200).json({ statusCode: 200, message: "Booking updated successfully", data: updatedBooking });
         } catch (error) {
             console.error("Error updating booking:", error);
             res.status(500).json({ error: "Failed to update booking" });
