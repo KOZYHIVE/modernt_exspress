@@ -22,6 +22,6 @@ router.get("/user/history/:id", authMiddleware, BookingController.getBookingById
 router.get("/user/:user_id", authMiddleware, BookingController.getBookingsByUserId);
 
 // Update a booking by ID (User role)
-router.put("/user/:id", authMiddleware, upload.single("image"), BookingController.updateBookingByIdRoleUser);
+router.put("/user/payment/:id", authMiddleware, upload.single("image"), BookingController.updateBookingByIdRoleUser);
 
 export default router;
